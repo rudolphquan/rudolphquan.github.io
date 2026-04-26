@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8" />
+<meta name="viewport"
+    content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, width=device-width" />
+<meta name="renderer" content="webkit">
+<meta name="format-detection" content="telephone=no, email=no, address=no">
+
+
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#292a2d" media="(prefers-color-scheme: dark)">
+
+
+<link rel="shortcut icon" href="/media/images/favicon.ico">
+<link rel="stylesheet" href="/styles/main.min.css">
+
+
+<style>:root{--accent-color:#28df99;}</style>
+
+
+<script>
+    // 自动为所有 target="_blank" 的链接添加 rel="noopener noreferrer"
+    document.addEventListener('DOMContentLoaded', function () {
+        var links = document.querySelectorAll('a[target="_blank"]');
+        links.forEach(function (link) {
+            var rel = link.getAttribute('rel') || '';
+            if (rel.indexOf('noopener') === -1) {
+                rel += ' noopener';
+            }
+            if (rel.indexOf('noreferrer') === -1) {
+                rel += ' noreferrer';
+            }
+            link.setAttribute('rel', rel.trim());
+        });
+    });
+</script>
+
+<script>
+    // declaraction of document.ready() function.
+    (function () {
+        var ie = !!(window.attachEvent && !window.opera);
+        var wk = /webkit\/(\d+)/i.test(navigator.userAgent) && (RegExp.$1 < 525);
+        var fn = [];
+        var run = function () {
+            for (var i = 0; i < fn.length; i++) fn[i]();
+        };
+        var d = document;
+        d.ready = function (f) {
+            if (!ie && !wk && d.addEventListener)
+                return d.addEventListener('DOMContentLoaded', f, false);
+            if (fn.push(f) > 1) return;
+            if (ie)
+                (function () {
+                    try {
+                        d.documentElement.doScroll('left');
+                        run();
+                    } catch (err) {
+                        setTimeout(arguments.callee, 0);
+                    }
+                })();
+            else if (wk)
+                var t = setInterval(function () {
+                    if (/^(loaded|complete)$/.test(d.readyState))
+                        clearInterval(t), run();
+                }, 0);
+        };
+    })();
+
+
+    document.ready(
+        function () {
+            var _Blog = window._Blog || {};
+
+            const getSystemTheme = () => {
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    return 'dark';
+                }
+                return 'light';
+            };
+
+            const configDefault = 'dark';
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme');
+            const initialTheme = currentTheme || configDefault || getSystemTheme();
+            const isDark = initialTheme === 'dark';
+
+            const updateButtons = (dark) => {
+                const sunBtn = document.getElementById("theme-toggle-sun");
+                const moonBtn = document.getElementById("theme-toggle-moon");
+                const mobileSunBtn = document.getElementById("mobile-theme-toggle-sun");
+                const mobileMoonBtn = document.getElementById("mobile-theme-toggle-moon");
+
+                if (dark) {
+                    if (sunBtn) sunBtn.style.display = 'none';
+                    if (moonBtn) moonBtn.style.display = 'inline-block';
+                    if (mobileSunBtn) mobileSunBtn.style.display = 'none';
+                    if (mobileMoonBtn) mobileMoonBtn.style.display = 'inline-block';
+                } else {
+                    if (sunBtn) sunBtn.style.display = 'inline-block';
+                    if (moonBtn) moonBtn.style.display = 'none';
+                    if (mobileSunBtn) mobileSunBtn.style.display = 'inline-block';
+                    if (mobileMoonBtn) mobileMoonBtn.style.display = 'none';
+                }
+            };
+
+            const updateThemeColor = (dark) => {
+                const themeColor = dark ? '#292a2d' : '#ffffff';
+                const metaTags = document.querySelectorAll('meta[name="theme-color"]');
+                if (metaTags.length > 0) {
+                    // 保留第一个，移除其他的，避免重复
+                    for (let i = 1; i < metaTags.length; i++) {
+                        metaTags[i].remove();
+                    }
+                    metaTags[0].setAttribute('content', themeColor);
+                    metaTags[0].removeAttribute('media');
+                } else {
+                    const meta = document.createElement('meta');
+                    meta.name = 'theme-color';
+                    meta.content = themeColor;
+                    document.head.appendChild(meta);
+                }
+            };
+
+            const applyTheme = (dark) => {
+                const body = document.getElementsByTagName('body')[0];
+                if (dark) {
+                    body.classList.add('dark-theme');
+                } else {
+                    body.classList.remove('dark-theme');
+                }
+                updateButtons(dark);
+                updateThemeColor(dark);
+            };
+
+            // Initial application
+            applyTheme(isDark);
+            if (!currentTheme) {
+                window.localStorage && window.localStorage.setItem('theme', initialTheme);
+            }
+
+            _Blog.toggleTheme = function () {
+                const toggleFunc = (e) => {
+                    // Prevent bubbling if needed, though buttons are distinct now
+                    if (e) e.stopPropagation();
+
+                    const body = document.getElementsByTagName('body')[0];
+                    const isCurrentlyDark = body.classList.contains('dark-theme');
+
+                    if (isCurrentlyDark) {
+                        body.classList.remove('dark-theme');
+                        updateButtons(false);
+                        window.localStorage && window.localStorage.setItem('theme', 'light');
+                    } else {
+                        body.classList.add('dark-theme');
+                        updateButtons(true);
+                        window.localStorage && window.localStorage.setItem('theme', 'dark');
+                    }
+                };
+
+                const sunBtn = document.getElementById("theme-toggle-sun");
+                const moonBtn = document.getElementById("theme-toggle-moon");
+                const mobileSunBtn = document.getElementById("mobile-theme-toggle-sun");
+                const mobileMoonBtn = document.getElementById("mobile-theme-toggle-moon");
+
+                if (sunBtn) sunBtn.addEventListener('click', toggleFunc);
+                if (moonBtn) moonBtn.addEventListener('click', toggleFunc);
+                if (mobileSunBtn) mobileSunBtn.addEventListener('click', toggleFunc);
+                if (mobileMoonBtn) mobileMoonBtn.addEventListener('click', toggleFunc);
+            };
+            _Blog.toggleTheme();
+
+            if (window.matchMedia && !configDefault) {
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                    const newTheme = e.matches ? 'dark' : 'light';
+                    applyTheme(e.matches);
+                    window.localStorage && window.localStorage.setItem('theme', newTheme);
+                });
+            }
+        }
+    );
+</script>
+
+<script>
+    // Reading Progress Component
+    document.addEventListener('DOMContentLoaded', () => {
+        const progressValue = document.querySelector('.reading-value');
+        const progressCircle = document.querySelector('.progress-ring__circle');
+        const container = document.querySelector('.reading-progress-container');
+
+        // Exit if elements don't exist (e.g., not on a post page)
+        if (!progressValue || !progressCircle || !container) {
+            return;
+        }
+
+        // SVG Circle setup
+        const radius = progressCircle.r.baseVal.value;
+        const circumference = 2 * Math.PI * radius;
+
+        progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+        progressCircle.style.strokeDashoffset = circumference;
+
+        function setProgress(percent) {
+            const safePercent = Math.min(100, Math.max(0, percent));
+            progressValue.textContent = `${Math.round(safePercent)}%`;
+            const offset = circumference - (safePercent / 100) * circumference;
+            progressCircle.style.strokeDashoffset = offset;
+        }
+
+        function onScroll() {
+            const scrollTop = window.scrollY || document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+
+            if (scrollHeight <= 0) {
+                setProgress(0);
+                return;
+            }
+
+            const scrollPercent = (scrollTop / scrollHeight) * 100;
+            setProgress(scrollPercent);
+
+            // Show/Hide logic: Show if scrolled more than 100px
+            if (scrollTop > 100) {
+                container.classList.add('show');
+            } else {
+                container.classList.remove('show');
+            }
+        }
+
+        // Initialize
+        onScroll();
+
+        // Listen for scroll events
+        window.addEventListener('scroll', onScroll, { passive: true });
+
+        // Recalculate on resize
+        window.addEventListener('resize', onScroll);
+    });
+</script>
+
+
+
+
+
+
+
+    <meta name="generator" content="Gridea Pro 1.1.1">
+    <title>随想2024-1-25 | Rudolph Quan&#39;s blog</title>
+
+    
+<meta name="description" content="吐槽部分 Focus on your KPIs, not your APIs 渣男在一处很集中，那就是一群女人的嘴里 心怀天下=克莱因瓶 婴儿长得像韭菜还是金豆？ 发了一些朋友圈，被高能的微信AI给封杀，方才反应过来我其实并没生活在一个民主国家，很多真相是不能被扩散的，皇帝不喜欢听的话是不能随便说的，但如此&amp;hellip;">
+<link rel="canonical" href="https://rudolphquan.github.io/post/sui-xiang-2024-1-25/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"随想2024-1-25","url":"https://rudolphquan.github.io/post/sui-xiang-2024-1-25/","description":"吐槽部分 Focus on your KPIs, not your APIs 渣男在一处很集中，那就是一群女人的嘴里 心怀天下=克莱因瓶 婴儿长得像韭菜还是金豆？ 发了一些朋友圈，被高能的微信AI给封杀，方才反应过来我其实并没生活在一个民主国家，很多真相是不能被扩散的，皇帝不喜欢听的话是不能随便说的，但如此\u0026hellip;","datePublished":"2024-01-25T23:15:48+08:00","dateModified":"2024-01-25T23:15:48+08:00","author":{"@type":"Person","name":"Rudolph Quan's blog"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"/images/avatar.png"},"name":"Rudolph Quan's blog"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://rudolphquan.github.io","name":"Rudolph Quan's blog","position":1},{"@type":"ListItem","item":"https://rudolphquan.github.io/post/sui-xiang-2024-1-25/","name":"随想2024-1-25","position":2}]}</script>
+<meta property="og:title" content="随想2024-1-25">
+<meta property="og:description" content="吐槽部分 Focus on your KPIs, not your APIs 渣男在一处很集中，那就是一群女人的嘴里 心怀天下=克莱因瓶 婴儿长得像韭菜还是金豆？ 发了一些朋友圈，被高能的微信AI给封杀，方才反应过来我其实并没生活在一个民主国家，很多真相是不能被扩散的，皇帝不喜欢听的话是不能随便说的，但如此&amp;hellip;">
+<meta property="og:url" content="https://rudolphquan.github.io/post/sui-xiang-2024-1-25/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Rudolph Quan's blog">
+<meta property="og:image" content="/images/avatar.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://rudolphquan.github.io/post/sui-xiang-2024-1-25/">
+<meta name="twitter:title" content="随想2024-1-25">
+<meta name="twitter:description" content="吐槽部分 Focus on your KPIs, not your APIs 渣男在一处很集中，那就是一群女人的嘴里 心怀天下=克莱因瓶 婴儿长得像韭菜还是金豆？ 发了一些朋友圈，被高能的微信AI给封杀，方才反应过来我其实并没生活在一个民主国家，很多真相是不能被扩散的，皇帝不喜欢听的话是不能随便说的，但如此&amp;hellip;">
+<meta name="twitter:image" content="/images/avatar.png">
+</head>
+
+<body class="">
+
+    
+<script>
+    (function () {
+        const getSystemTheme = () => {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                return 'dark';
+            }
+            return 'light';
+        };
+
+        const configDefault = 'dark';
+        const savedTheme = localStorage.getItem('theme');
+        const theme = savedTheme || configDefault || getSystemTheme();
+
+        if (theme === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+
+        if (!savedTheme) {
+            localStorage.setItem('theme', theme);
+        }
+    })();
+</script>
+<header class="mod-head">
+    <div class="mod-head__left">
+        <div class="mod-head__logo">
+            <a href="/">
+                
+                <img class="avatar" alt="avatar" src="/images/avatar.png">
+                
+            </a>
+        </div>
+    </div>
+
+    <div class="mod-head__right">
+        <span>
+            <button id="theme-toggle-sun" class="tiptap-button theme-toggle-sun" aria-label="Switch to dark mode">
+                <svg width="18" height="18" class="tiptap-button-icon" viewBox="0 0 24 24" fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M12 1C12.5523 1 13 1.44772 13 2V4C13 4.55228 12.5523 5 12 5C11.4477 5 11 4.55228 11 4V2C11 1.44772 11.4477 1 12 1Z"
+                        fill="currentColor"></path>
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12ZM12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9Z"
+                        fill="currentColor"></path>
+                    <path
+                        d="M13 20C13 19.4477 12.5523 19 12 19C11.4477 19 11 19.4477 11 20V22C11 22.5523 11.4477 23 12 23C12.5523 23 13 22.5523 13 22V20Z"
+                        fill="currentColor"></path>
+                    <path
+                        d="M4.22282 4.22289C4.61335 3.83236 5.24651 3.83236 5.63704 4.22289L7.04704 5.63289C7.43756 6.02341 7.43756 6.65658 7.04704 7.0471C6.65651 7.43762 6.02335 7.43762 5.63283 7.0471L4.22282 5.6371C3.8323 5.24658 3.8323 4.61341 4.22282 4.22289Z"
+                        fill="currentColor"></path>
+                    <path
+                        d="M18.367 16.9529C17.9765 16.5623 17.3433 16.5623 16.9528 16.9529C16.5623 17.3434 16.5623 17.9766 16.9528 18.3671L18.3628 19.7771C18.7533 20.1676 19.3865 20.1676 19.777 19.7771C20.1675 19.3866 20.1675 18.7534 19.777 18.3629L18.367 16.9529Z"
+                        fill="currentColor"></path>
+                    <path
+                        d="M1 12C1 11.4477 1.44772 11 2 11H4C4.55228 11 5 11.4477 5 12C5 12.5523 4.55228 13 4 13H2C1.44772 13 1 12.5523 1 12Z"
+                        fill="currentColor"></path>
+                    <path
+                        d="M20 11C19.4477 11 19 11.4477 19 12C19 12.5523 19.4477 13 20 13H22C22.5523 13 23 12.5523 23 12C23 11.4477 22.5523 11 22 11H20Z"
+                        fill="currentColor"></path>
+                    <path
+                        d="M7.04704 16.9529C7.43756 17.3434 7.43756 17.9766 7.04704 18.3671L5.63704 19.7771C5.24651 20.1676 4.61335 20.1676 4.22282 19.7771C3.8323 19.3866 3.8323 18.7534 4.22283 18.3629L5.63283 16.9529C6.02335 16.5623 6.65651 16.5623 7.04704 16.9529Z"
+                        fill="currentColor"></path>
+                    <path
+                        d="M19.777 5.6371C20.1675 5.24657 20.1675 4.61341 19.777 4.22289C19.3865 3.83236 18.7533 3.83236 18.3628 4.22289L16.9528 5.63289C16.5623 6.02341 16.5623 6.65658 16.9528 7.0471C17.3433 7.43762 17.9765 7.43762 18.367 7.0471L19.777 5.6371Z"
+                        fill="currentColor"></path>
+                </svg>
+            </button>
+            <button id="theme-toggle-moon" class="tiptap-button theme-toggle-moon" aria-label="Switch to light mode">
+                <svg width="18" height="18" class="tiptap-button-icon" viewBox="0 0 24 24" fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M12 2C10.0222 2 8.08879 2.58649 6.4443 3.6853C4.79981 4.78412 3.51809 6.3459 2.76121 8.17317C2.00433 10.0004 1.8063 12.0111 2.19215 13.9509C2.578 15.8907 3.53041 17.6725 4.92894 19.0711C6.32746 20.4696 8.10929 21.422 10.0491 21.8079C11.9889 22.1937 13.9996 21.9957 15.8268 21.2388C17.6541 20.4819 19.2159 19.2002 20.3147 17.5557C21.4135 15.9112 22 13.9778 22 12C22 11.5955 21.7564 11.2309 21.3827 11.0761C21.009 10.9213 20.5789 11.0069 20.2929 11.2929C19.287 12.2988 17.9226 12.864 16.5 12.864C15.0774 12.864 13.713 12.2988 12.7071 11.2929C11.7012 10.287 11.136 8.92261 11.136 7.5C11.136 6.07739 11.7012 4.71304 12.7071 3.70711C12.9931 3.42111 13.0787 2.99099 12.9239 2.61732C12.7691 2.24364 12.4045 2 12 2ZM7.55544 5.34824C8.27036 4.87055 9.05353 4.51389 9.87357 4.28778C9.39271 5.27979 9.13604 6.37666 9.13604 7.5C9.13604 9.45304 9.91189 11.3261 11.2929 12.7071C12.6739 14.0881 14.547 14.864 16.5 14.864C17.6233 14.864 18.7202 14.6073 19.7122 14.1264C19.4861 14.9465 19.1295 15.7296 18.6518 16.4446C17.7727 17.7602 16.5233 18.7855 15.0615 19.391C13.5997 19.9965 11.9911 20.155 10.4393 19.8463C8.88743 19.5376 7.46197 18.7757 6.34315 17.6569C5.21447 16.538 4.4624 15.1126 4.15372 13.5607C3.84504 12.0089 4.00347 10.4003 4.60897 8.93853C5.21447 7.47672 6.23985 6.22729 7.55544 5.34824Z"
+                        fill="currentColor"></path>
+                    <path
+                        d="M19 2C19.5523 2 20 2.44772 20 3V4H21C21.5523 4 22 4.44772 22 5C22 5.55228 21.5523 6 21 6H20V7C20 7.55228 19.5523 8 19 8C18.4477 8 18 7.55228 18 7V6H17C16.4477 6 16 5.55228 16 5C16 4.44772 16.4477 4 17 4H18V3C18 2.44772 18.4477 2 19 2Z"
+                        fill="currentColor"></path>
+                </svg>
+            </button>
+        </span>
+    </div>
+</header>
+<!-- <a href="#" id="back-to-top" style="display: inline;"> ^ </a> -->
+
+<article class="mod-post mod-post__type-post">
+    <header>
+        <h1 class="mod-post__title">
+            随想2024-1-25
+        </h1>
+    </header>
+
+    <div class="mod-post__meta">
+        <time datetime="2024-01-25">
+            2024-01-25
+        </time> • 14 分钟阅读 •
+         </div>
+
+
+
+            <div class="mod-post__entry wzulli">
+                
+                <h2 id="heading">吐槽部分</h2>
+<blockquote>
+<p><strong>Focus on your KPIs, not your APIs</strong></p>
+</blockquote>
+<blockquote>
+<p>渣男在一处很集中，那就是一群女人的嘴里</p>
+</blockquote>
+<blockquote>
+<p>心怀天下=克莱因瓶</p>
+</blockquote>
+<blockquote>
+<p>婴儿长得像韭菜还是金豆？</p>
+</blockquote>
+<p>发了一些朋友圈，被高能的微信AI给封杀，方才反应过来我其实并没生活在一个民主国家，很多真相是不能被扩散的，皇帝不喜欢听的话是不能随便说的，但如此这般我们岂不都成了奴才？所以法外之地中的这个法真的需要探明清除，这并不是抬杠。</p>
+<p><img src="https://prod-files-secure.s3.us-west-2.amazonaws.com/e4733b35-acee-45e2-b563-45e631b5c40a/bdc7dea5-4e10-42b4-8c86-953ad44ce270/1000161079.jpg" alt="1000161079.jpg" /></p>
+<p><img src="https://prod-files-secure.s3.us-west-2.amazonaws.com/e4733b35-acee-45e2-b563-45e631b5c40a/969050d7-b24a-49ca-a8bb-331ec2f6c7ff/1000172790.jpg" alt="1000172790.jpg" /></p>
+<p><img src="https://prod-files-secure.s3.us-west-2.amazonaws.com/e4733b35-acee-45e2-b563-45e631b5c40a/bd53c7fc-26db-47a1-a88d-766119b8e9cb/1000183592.jpg" alt="1000183592.jpg" /></p>
+<p><img src="https://prod-files-secure.s3.us-west-2.amazonaws.com/e4733b35-acee-45e2-b563-45e631b5c40a/64286db4-4709-4d24-9d71-f7f0e2b74d4d/1000187802.jpg" alt="1000187802.jpg" /></p>
+<p>我不知该用什么心情在此落笔。在计算机和互联网没这么发达的时代，落笔的文字组成的排列组合可以通过言传扩散，时代发展至今，万物互联的今天，信息的传递竟然更加受阻。所以我们人类文明发展的目的是什么？披着民主外皮倒退回封建专制还不如撕破表皮正大光明地登上铁王座，顺从的人加入，害怕的人臣服，勇敢的人前进，懦弱的人逃离。</p>
+<p>我深爱着现在所从事的信息行业，毫不夸张地说“救赎之道，就在其中”。人类文明从香农开始，变得可以量化，就像RPG游戏中我们可以看到自己的HP和MP，射击游戏中终于有了环境光，建筑游戏中终于有了资源条，文明越发达信息传输的带宽极限值越大。</p>
+<p>有幸从事过吉他的制造，声音是空气中疏密波的排列组合通过在空气中传播，到耳腔内进行一次EQ（在4kHz左右共鸣 对应峰值提高），随后通过骨膜、锤骨、砧骨等击打内部神经递质，在耳蜗末端结构不同位置共振，随后通过神经在脑中形成“声感”。而发声的源头吉他，其实是琴弦经过一系列滤波器（不同木材），把空气搅动出不同疏密波组合。如果对这个过程进行全数字化建模或仿真，其实声学本质是数学，是排列组合，我们制作吉他就是改变它的<strong>滤波器特性（这是乐器声音的核心）</strong>。再多一些考虑就是增加湿度稳定性和考虑演奏手感、外观等。但是很神奇的是，当时的市场并不如此理性，很多玄学衍生出的极端个人崇拜充斥在整个市场，演化出匪夷所思的鄙视链。如同发烧友的圈子，大家更多使用价格和眼睛去评价声音，好似一定要通过“争高下”来满足自己某些畸形的欲望。只要用盲听基本可以破除所有迷信。</p>
+<p>到了信息行业，一切都变得客观、简单起来，所有的产品性能参数都有量化数值，好坏一眼便知，再无玄学干扰，终于可以踏实往前走。</p>
+<p>那这种玄学行业诞生的深层原因是什么？是人的问题吗？</p>
+<p>不，我认为不是，归根究底应是文化制度所致。</p>
+<p>如果一个国家民族的底不喜欢自省和思辨，如果一个国家民族的每个人都崇尚至高无上的权利并渴望享受他人朝圣，如果一个国家民族不正视自己的历史不自省永远不认错，如果一个国家民族没有民主只有专制，那我认为诸如此类光怪陆离的事情只会越来越多。</p>
+<blockquote>
+<p>所以，什么是民主？</p>
+</blockquote>
+<p>民主一定不是简单的少数服从多数，因为未受教化的普罗大众的内心动物性大于人性，世俗语言中的人性是通过后天教育获得的“良好”的部分，之所以良好那一定是有不良好的“本性”做衬托。</p>
+<p>想一下如果真正的工农阶级当家做主会是什么结局，洪秀全、义和团等等。他们的执政将会彻底在制度上返祖，成为完全体的“权利不受制约，人性之恶充分释放”，历史已经证明了这一点。</p>
+<p>我自幼对科学中那纯粹、不以人的意志为转移的、客观的规律无限神往，那时的梦想真的有颜色。直到在大学中真正见到国内的“科研”氛围，便彻底绝望。周边一群喜欢当爹的人会告诉你无数“正确”的路并说“这样走，绝对没问题！”，大家都是第一次做人，为何你们会觉得你们更“成功”？为了躲避这些牛鬼蛇神，当时扮演了不少愚蠢才得以逃离。</p>
+<p>所以国内“成功”的定义已然如此肤浅且一致，人可以没有信仰、信念，但不能没有房车孩黄金，所有的“另类”都会被持续PUA直到被同化。人应该简单一些，诚实面对自己&amp;他人，驯化并没有让我们变得更好，但“皇帝的新衣”从精神层而非物理层彻底屏蔽了诚实面对自己和他人的信号。</p>
+<blockquote>
+<p>正如我们不会感受到整个健康的身体，而只会觉得窄鞋子夹住脚趾头的一小处地方，同样我们不会考虑到所有进展顺利的事情，而只会留意鸡毛蒜皮的烦恼</p>
+</blockquote>
+<p>叔本华的这句话可以扩展到“人”这个个体行为和思维的方方面面，几乎生活的大部在这句话下都成了笑话。</p>
+<p>在国内书读得太多人，“底线”太高，却反会常做一些心手不一的事情。比如在靠技能打工的时候嚷着要赚钱；在赚完钱之后嚷着要社会和苍生。  其实在国内赚钱这件事，只要底线够低，没有那么多教育、道德上的束缚，几乎可以说是轻而易举。 疫情的时候随便垄断或生产个什么（药、口罩、食物等等），只要你内心毫无愧疚感敢想敢做，敛财速度几乎像自由落体一般快速。最赚钱的方案都在证监会犯罪条例里，都在真正的A股里，回报远超贩毒且风险几乎没有，合理合法合规 这三合就是最终极的敛财。诸位有没有想过为什么很多人会告诉你“不要轻信小道消息”？ 如果大家都知道了“小道消息”，它便不再“小道”，分蛋糕的人如果是全部，那还有意义吗？那岂不是共产主义吗？诚实讲你会和别人共产吗？你自己都不会为什么要求别人和你共产？</p>
+<p>所有赚取利润的体系里，只有<strong>抽点</strong>是稳赚不赔的。不管文明如何发展，生产力如何进步，我们都可以把世界或者金融体系当成恒定的1，也就是100%，因为人类的悲欢并不来源于所谓财富的绝对值，而来源于百分比的差异，它不受通缩通胀的影响，本质上我比你多我就开心。虽然1是恒定的，但内部是流动的，如果对所有的流动都抽点，那么只有抽点的人是“稳赚不赔”的，人类个体和群体一切的行为如果拍扁建模，都可等效于1内部的流动。</p>
+<p>曾听过很多人说“金融是命脉”，个人觉得纯属胡扯，说这话的人只不过是抽点流程中的既得利益者，这句话所建立的精神壁垒可以让抽点过程更加被局限于某些团体，毕竟高效敛财的方法知道的人越少越好。这个体系表观越复杂“门槛”越高越利于稳定统治。</p>
+<p>个人的劳动创造其实在内部变相“稀释”了这个1，虽然外面看仍然是1，但是你在1中所占的百分比增加了（这里假定其他地方都没有进行劳动创造），别人变相的百分比就减少了，所以别人该做什么？他们有几种方法继续维持高百分比状态，一个是抢走你的百分比（抽点或剥削），二是创造更多百分比（比你更多的劳动创造）。<strong>但这里有趣的地方来了</strong>，什么东西量度你的劳动创造？—— 金钱，所以我一定要靠比你更多的劳动创造来提升我的百分比吗？ 并不一定，我可以通过无限量的印钞来降低你的百分比，再以合理合法合规（当然是我自己规定的，不能让你轻易达到的标准，实现的途径太多不赘述）的手段将这些百分比收归囊中以此维持高百分比的地位。 最终你会发现，无论你多么努力地透支生命贡献智慧来换取劳动报酬，永远都追不上“平均速度”，因为这个游戏本质就是一个圆圈的蛇咬尾的游戏，而且还有人站在GM的视角不断把蛇身砍断拼接（抽点）使其越来越短。</p>
+<p>什么？你不接受这样的规则？想要变成GM？呵，历史上有同种想法的人多如牛毛，可以参考，可以执行，时间线中渺小一瞬的空间中的渺小一隅的排列组合的微小变化罢了。</p>
+<p>综上而论我个人不觉得共产主义可以实现，当然表面上可能可以，但那时的人已经不是现在的人。可能是抛弃了现在人性的机器人或者是赛博生命体。</p>
+<p>人类个体有吃有穿有住的现状并没有让所有人开心，现代人体会不到以前人均衣不蔽体食不果腹的状态，只能看得到周边有太多过的比自己好很多的人，造成痛苦的永远是DNA里的人性。现有的法制约束的“和平”世界并没有抹杀DNA中的这部分，所有人“假装”生活在“和平”世界相敬如宾，话术上“共同发展”，实则暗流涌动，皆行杀伐之事，只不过当今的杀伐从物理层面“升级”到了规则层面，破坏力更加强悍。</p>
+<p>个体在这游戏中所能做的事，要么投身其中闪耀一下随后陨灭，要么远离纷争独善其身，在内心假象的一片净土探索，嗯 探索的速度还要足够慢，否则人生的“无聊”将又成为一大敌。</p>
+<p>至于智慧与愚钝，那只是评价他人暗示自己开心的手段而已，时间拉长空间拉长，意义都不大。</p>
+<h2 id="heading-1">代码学习部分</h2>
+<p><a href="https://github.com/frappe/erpnext?tab=readme-ov-file">frappe/erpnext: Free and Open Source Enterprise Resource Planning (ERP) (github.com)</a></p>
+<p><a href="https://github.com/GreaterWMS/GreaterWMS">GreaterWMS/GreaterWMS: This Inventory management system is the currently Ford Asia Pacific after-sales logistics warehousing supply chain process . After I leave Ford , I start this project . You can share your vacant warehouse space, use it for those in need, and generate income (github.com)</a></p>
+<p><a href="https://www.py4e.com/lessons">PY4E - Python for Everybody</a></p>
+<p><a href="https://github.com/Kanaries/pygwalker">Kanaries/pygwalker: PyGWalker: Turn your pandas dataframe into an interactive UI for visual analysis (github.com)</a></p>
+<ul>
+<li><a href="https://github.com/Kanaries/pygwalker"><strong>PyGWalker</strong></a>是个在Jupyter Notebook环境中运行的可视化探索式分析工具，仅一条命令即可生成一个可交互的图形界面，以类似Tableau/PowerBI的方式，通过拖拽字段进行数据分析。</li>
+<li>过去在python中进行数据可视化分析时，经常需要查询大量的可视化类的代码，并编写胶水代码将其应用在数据集上。PyGWalker的目标是通过一行代码，将数据集转化为一个可视化分析工具，只需拖拉拽即可生成图表，从而减少数据分析师在数据可视化上的时间成本</li>
+<li><a href="https://kanaries.net/home/pygwalker">PyGWalker: Turn your data into visual analytic app (kanaries.net)</a></li>
+</ul>
+<p><a href="https://github.com/iperov/DeepFaceLive">iperov/DeepFaceLive: Real-time face swap for PC streaming or video calls (github.com)</a> 实时换脸</p>
+<p><a href="https://github.com/Python-World/python-mini-projects?tab=readme-ov-file">Python-World/python-mini-projects: A collection of simple python mini projects to enhance your python skills (github.com)</a> 一些小的python脚本，用以理解python</p>
+<p><a href="https://github.com/mljar/mercury">mljar/mercury: Convert Jupyter Notebooks to Web Apps (github.com)</a> 将jupyter notebook 里的代码可视化成网页可视化并隐藏代码</p>
+<p><a href="https://github.com/whyour/qinglong?tab=readme-ov-file">whyour/qinglong: 支持 Python3、JavaScript、Shell、Typescript 的定时任务管理平台（Timed task management platform supporting Python3, JavaScript, Shell, Typescript） (github.com)</a></p>
+<p><a href="https://zh.d2l.ai/">《动手学深度学习》 — 动手学深度学习 2.0.0 documentation (d2l.ai)</a></p>
+<p><a href="https://github.com/roboflow/supervision">roboflow/supervision: We write your reusable computer vision tools. 💜 (github.com)</a> 视觉标识的python库</p>
+<p><a href="https://github.com/jackfrued/Python-100-Days">jackfrued/Python-100-Days: Python - 100天从新手到大师 (github.com)</a></p>
+<p>编程大师<em>Martin Fowler</em>先生曾经说过：“<strong>代码有很多种坏味道，重复是最坏的一种！</strong>”，要写出高质量的代码首先要解决的就是重复代码的问题。对于上面的代码来说，我们可以将计算阶乘的功能封装到一个称之为“函数”的功能模块中，在需要计算阶乘的地方，我们只需要“调用”这个“函数”就可以了。</p>
+<pre><code class="language-python">&quot;&quot;&quot;
+输入M和N计算C(M,N)
+
+Version: 0.1
+Author: 骆昊
+&quot;&quot;&quot;
+def fac(num):
+    &quot;&quot;&quot;求阶乘&quot;&quot;&quot;
+    result = 1
+    for n in range(1, num + 1):
+        result *= n
+    return result
+
+m = int(input('m = '))
+n = int(input('n = '))
+# 当需要计算阶乘的时候不用再写循环求阶乘而是直接调用已经定义好的函数
+print(fac(m) // fac(n) // fac(m - n))
+</code></pre>
+<blockquote>
+<p><strong>说明：</strong> Python的<code>math</code>模块中其实已经有一个名为<code>factorial</code>函数实现了阶乘运算，事实上求阶乘并不用自己定义函数。下面的例子中，我们讲的函数在Python标准库已经实现过了，我们这里是为了讲解函数的定义和使用才把它们又实现了一遍，<strong>实际开发中并不建议做这种低级的重复劳动</strong>。</p>
+</blockquote>
+<p>这里有一个非常值得探讨的问题，我们已经有了列表这种数据结构，为什么还需要元组这样的类型呢？</p>
+<ol>
+<li>元组中的元素是无法修改的，事实上我们在项目中尤其是<a href="https://zh.wikipedia.org/zh-hans/%E5%A4%9A%E7%BA%BF%E7%A8%8B">多线程</a>环境（后面会讲到）中可能更喜欢使用的是那些不变对象（一方面因为对象状态不能修改，所以可以避免由此引起的不必要的程序错误，简单的说就是一个不变的对象要比可变的对象更加容易维护；另一方面因为没有任何一个线程能够修改不变对象的内部状态，一个不变对象自动就是线程安全的，这样就可以省掉处理同步化的开销。一个不变对象可以方便的被共享访问）。所以结论就是：如果不需要对元素进行添加、删除、修改的时候，可以考虑使用元组，当然如果一个方法要返回多个值，使用元组也是不错的选择。</li>
+<li>元组在创建时间和占用的空间上面都优于列表。我们可以使用sys模块的getsizeof函数来检查存储同样的元素的元组和列表各自占用了多少内存空间，这个很容易做到。我们也可以在ipython中使用魔法指令%timeit来分析创建同样内容的元组和列表所花费的时间，下图是我的macOS系统上测试的结果。</li>
+</ol>
+<p><img src="https://prod-files-secure.s3.us-west-2.amazonaws.com/e4733b35-acee-45e2-b563-45e631b5c40a/68dece33-5656-4dea-9f85-66b5a47471a9/Untitled.png" alt="Untitled" /></p>
+<p><a href="https://www.ihuyi.com/">短信接口_短信验证码_验证码短信平台-互亿无线 (ihuyi.com)</a></p>
+<p><a href="https://www.bootcss.com/">Bootstrap中文网 (bootcss.com)</a> 简洁、直观、强悍的前端开发框架，让web开发更迅速、简单。</p>
+<p>数据处理python库</p>
+<ol>
+<li><a href="https://numpy.org/">NumPy</a>：支持常见的数组和矩阵操作，通过<code>ndarray</code>类实现了对多维数组的封装，提供了操作这些数组的方法和函数集。由于 NumPy 内置了并行运算功能，当使用多核 CPU 时，Numpy会自动做并行计算。</li>
+<li><a href="https://pandas.pydata.org/">Pandas</a>：pandas 的核心是其特有的数据结构<code>DataFrame</code>和<code>Series</code>，这使得 pandas 可以处理包含不同类型数据的表格和时间序列，这一点是NumPy的<code>ndarray</code>做不到的。使用 pandas，可以轻松顺利的加载各种形式的数据，然后对数据进行切片、切块、处理缺失值、聚合、重塑和可视化等操作。</li>
+<li><a href="https://matplotlib.org/">Matplotlib</a>：matplotlib 是一个包含各种绘图模块的库，能够根据我们提供的数据创建高质量的图表。此外，matplotlib 还提供了 pylab 模块，这个模块包含了很多像 <a href="https://www.mathworks.com/products/matlab.html">MATLAB</a> 一样的绘图组件。</li>
+</ol>
+<p>其他数据处理python库</p>
+<ol>
+<li><a href="https://scipy.org/">SciPy</a>：完善了 NumPy 的功能，封装了大量科学计算的算法，包括线性代数、统计检验、稀疏矩阵、信号和图像处理、最优化问题、快速傅里叶变换等。</li>
+<li><a href="https://seaborn.pydata.org/">Seaborn</a>：seaborn 是基于 matplotlib 的图形可视化工具，直接使用 matplotlib 虽然可以定制出漂亮的统计图表，但是总体来说还不够简单方便，seaborn 相当于是对 matplotlib 做了封装，让用户能够以更简洁有效的方式做出各种有吸引力的统计图表。</li>
+<li><a href="https://scikit-learn.org/">Scikit-learn</a>：scikit-learn 最初是 SciPy 的一部分，提供了大量机器学习可能用到的工具，包括数据预处理、监督学习（分类、回归）、无监督学习（聚类）、模式选择、交叉检验等。</li>
+<li><a href="https://www.statsmodels.org/stable/index.html">Statsmodels</a>：包含了经典统计学和经济计量学算法的库。</li>
+</ol>
+
+            </div>
+
+</article>
+
+
+
+
+
+
+<div class="mod-post__poster">
+</div>
+
+</div>
+
+
+
+
+
+
+<!-- Reading Progress Component -->
+<div class="reading-progress-container">
+  <span class="reading-label">阅读进度</span>
+  <span class="reading-value">0%</span>
+  <svg class="progress-ring" viewBox="0 0 24 24">
+    <!-- Background Circle -->
+    <circle class="progress-ring__circle-bg" stroke-width="3" fill="transparent" r="10" cx="12" cy="12" />
+    <!-- Progress Circle -->
+    <circle class="progress-ring__circle" stroke-width="3" fill="transparent" r="10" cx="12" cy="12" />
+  </svg>
+</div>
+<footer id="footer" class="footer">
+    <nav>
+        
+        
+        <a class="menu-item" href="/">首页</a>
+        
+         · 
+        <a class="menu-item" href="/post">博客</a>
+        
+         · 
+        <a class="menu-item" href="/memos">闪念</a>
+        
+         · 
+        <a class="menu-item" href="/archives">归档</a>
+        
+         · 
+        <a class="menu-item" href="/tags">标签</a>
+        
+         · 
+        <a class="menu-item" href="/links">友链</a>
+        
+         · 
+        <a class="menu-item" href="https://rudolphquan.github.io/post/guan-yu-wo">关于</a>
+        
+    </nav>
+
+    <div class="Copyright">Copyright &copy; <span class="current-year"></span> <a href="https://rudolphquan.github.io">Rudolph Quan&#39;s blog</a></div>
+    <script>document.querySelector('.current-year').textContent = new Date().getFullYear();</script>
+
+    <div class="index_footer">
+         ·
+        <a class="rss" href="/feed.xml" target="_blank" rel="noopener noreferrer">
+            <i class="ri-rss-line"></i>RSS
+        </a>
+    </div>
+</footer>
+
+
+
+
+    
+
+    
+<script>console.log("\n%c ✦ Gridea Pro v1.1.1 %c · Theme: amore-jinja2 v1.1.0 · https://gridea.pro %c\n","color:#fadfa3;background:#111111;padding:9px 14px;border-radius:4px 0 0 4px;font-weight:500;font-size:12px","color:#e05c00;background:#fff3ec;padding:9px 14px;border-radius:0 4px 4px 0;font-size:11px","")</script>
+</body>
+
+</html>
