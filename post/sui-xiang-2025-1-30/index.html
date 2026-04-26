@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8" />
+<meta name="viewport"
+    content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, width=device-width" />
+<meta name="renderer" content="webkit">
+<meta name="format-detection" content="telephone=no, email=no, address=no">
+
+
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#292a2d" media="(prefers-color-scheme: dark)">
+
+
+<link rel="shortcut icon" href="/media/images/favicon.ico">
+<link rel="stylesheet" href="/styles/main.min.css">
+
+
+<style>:root{--accent-color:#28df99;}</style>
+
+
+<script>
+    // 自动为所有 target="_blank" 的链接添加 rel="noopener noreferrer"
+    document.addEventListener('DOMContentLoaded', function () {
+        var links = document.querySelectorAll('a[target="_blank"]');
+        links.forEach(function (link) {
+            var rel = link.getAttribute('rel') || '';
+            if (rel.indexOf('noopener') === -1) {
+                rel += ' noopener';
+            }
+            if (rel.indexOf('noreferrer') === -1) {
+                rel += ' noreferrer';
+            }
+            link.setAttribute('rel', rel.trim());
+        });
+    });
+</script>
+
+<script>
+    // declaraction of document.ready() function.
+    (function () {
+        var ie = !!(window.attachEvent && !window.opera);
+        var wk = /webkit\/(\d+)/i.test(navigator.userAgent) && (RegExp.$1 < 525);
+        var fn = [];
+        var run = function () {
+            for (var i = 0; i < fn.length; i++) fn[i]();
+        };
+        var d = document;
+        d.ready = function (f) {
+            if (!ie && !wk && d.addEventListener)
+                return d.addEventListener('DOMContentLoaded', f, false);
+            if (fn.push(f) > 1) return;
+            if (ie)
+                (function () {
+                    try {
+                        d.documentElement.doScroll('left');
+                        run();
+                    } catch (err) {
+                        setTimeout(arguments.callee, 0);
+                    }
+                })();
+            else if (wk)
+                var t = setInterval(function () {
+                    if (/^(loaded|complete)$/.test(d.readyState))
+                        clearInterval(t), run();
+                }, 0);
+        };
+    })();
+
+
+    document.ready(
+        function () {
+            var _Blog = window._Blog || {};
+
+            const getSystemTheme = () => {
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    return 'dark';
+                }
+                return 'light';
+            };
+
+            const configDefault = 'dark';
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme');
+            const initialTheme = currentTheme || configDefault || getSystemTheme();
+            const isDark = initialTheme === 'dark';
+
+            const updateButtons = (dark) => {
+                const sunBtn = document.getElementById("theme-toggle-sun");
+                const moonBtn = document.getElementById("theme-toggle-moon");
+                const mobileSunBtn = document.getElementById("mobile-theme-toggle-sun");
+                const mobileMoonBtn = document.getElementById("mobile-theme-toggle-moon");
+
+                if (dark) {
+                    if (sunBtn) sunBtn.style.display = 'none';
+                    if (moonBtn) moonBtn.style.display = 'inline-block';
+                    if (mobileSunBtn) mobileSunBtn.style.display = 'none';
+                    if (mobileMoonBtn) mobileMoonBtn.style.display = 'inline-block';
+                } else {
+                    if (sunBtn) sunBtn.style.display = 'inline-block';
+                    if (moonBtn) moonBtn.style.display = 'none';
+                    if (mobileSunBtn) mobileSunBtn.style.display = 'inline-block';
+                    if (mobileMoonBtn) mobileMoonBtn.style.display = 'none';
+                }
+            };
+
+            const updateThemeColor = (dark) => {
+                const themeColor = dark ? '#292a2d' : '#ffffff';
+                const metaTags = document.querySelectorAll('meta[name="theme-color"]');
+                if (metaTags.length > 0) {
+                    // 保留第一个，移除其他的，避免重复
+                    for (let i = 1; i < metaTags.length; i++) {
+                        metaTags[i].remove();
+                    }
+                    metaTags[0].setAttribute('content', themeColor);
+                    metaTags[0].removeAttribute('media');
+                } else {
+                    const meta = document.createElement('meta');
+                    meta.name = 'theme-color';
+                    meta.content = themeColor;
+                    document.head.appendChild(meta);
+                }
+            };
+
+            const applyTheme = (dark) => {
+                const body = document.getElementsByTagName('body')[0];
+                if (dark) {
+                    body.classList.add('dark-theme');
+                } else {
+                    body.classList.remove('dark-theme');
+                }
+                updateButtons(dark);
+                updateThemeColor(dark);
+            };
+
+            // Initial application
+            applyTheme(isDark);
+            if (!currentTheme) {
+                window.localStorage && window.localStorage.setItem('theme', initialTheme);
+            }
+
+            _Blog.toggleTheme = function () {
+                const toggleFunc = (e) => {
+                    // Prevent bubbling if needed, though buttons are distinct now
+                    if (e) e.stopPropagation();
+
+                    const body = document.getElementsByTagName('body')[0];
+                    const isCurrentlyDark = body.classList.contains('dark-theme');
+
+                    if (isCurrentlyDark) {
+                        body.classList.remove('dark-theme');
+                        updateButtons(false);
+                        window.localStorage && window.localStorage.setItem('theme', 'light');
+                    } else {
+                        body.classList.add('dark-theme');
+                        updateButtons(true);
+                        window.localStorage && window.localStorage.setItem('theme', 'dark');
+                    }
+                };
+
+                const sunBtn = document.getElementById("theme-toggle-sun");
+                const moonBtn = document.getElementById("theme-toggle-moon");
+                const mobileSunBtn = document.getElementById("mobile-theme-toggle-sun");
+                const mobileMoonBtn = document.getElementById("mobile-theme-toggle-moon");
+
+                if (sunBtn) sunBtn.addEventListener('click', toggleFunc);
+                if (moonBtn) moonBtn.addEventListener('click', toggleFunc);
+                if (mobileSunBtn) mobileSunBtn.addEventListener('click', toggleFunc);
+                if (mobileMoonBtn) mobileMoonBtn.addEventListener('click', toggleFunc);
+            };
+            _Blog.toggleTheme();
+
+            if (window.matchMedia && !configDefault) {
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                    const newTheme = e.matches ? 'dark' : 'light';
+                    applyTheme(e.matches);
+                    window.localStorage && window.localStorage.setItem('theme', newTheme);
+                });
+            }
+        }
+    );
+</script>
+
+<script>
+    // Reading Progress Component
+    document.addEventListener('DOMContentLoaded', () => {
+        const progressValue = document.querySelector('.reading-value');
+        const progressCircle = document.querySelector('.progress-ring__circle');
+        const container = document.querySelector('.reading-progress-container');
+
+        // Exit if elements don't exist (e.g., not on a post page)
+        if (!progressValue || !progressCircle || !container) {
+            return;
+        }
+
+        // SVG Circle setup
+        const radius = progressCircle.r.baseVal.value;
+        const circumference = 2 * Math.PI * radius;
+
+        progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+        progressCircle.style.strokeDashoffset = circumference;
+
+        function setProgress(percent) {
+            const safePercent = Math.min(100, Math.max(0, percent));
+            progressValue.textContent = `${Math.round(safePercent)}%`;
+            const offset = circumference - (safePercent / 100) * circumference;
+            progressCircle.style.strokeDashoffset = offset;
+        }
+
+        function onScroll() {
+            const scrollTop = window.scrollY || document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+
+            if (scrollHeight <= 0) {
+                setProgress(0);
+                return;
+            }
+
+            const scrollPercent = (scrollTop / scrollHeight) * 100;
+            setProgress(scrollPercent);
+
+            // Show/Hide logic: Show if scrolled more than 100px
+            if (scrollTop > 100) {
+                container.classList.add('show');
+            } else {
+                container.classList.remove('show');
+            }
+        }
+
+        // Initialize
+        onScroll();
+
+        // Listen for scroll events
+        window.addEventListener('scroll', onScroll, { passive: true });
+
+        // Recalculate on resize
+        window.addEventListener('resize', onScroll);
+    });
+</script>
+
+
+
+
+
+
+
+    <meta name="generator" content="Gridea Pro 1.1.1">
+    <title>随想2025-1-30 | Rudolph Quan&#39;s blog</title>
+
+    
+<meta name="description" content="Thought 畸形的制度产生出畸形的群众衍生出畸形的事件。 事不关己高高挂起，沉默不言与我无关。无数的与我无关更加正向促进畸形的制度膨胀。 我想说什么，我能说什么，我会说什么。 Collection http://politics.people.com.cn/n/2013/1013/c70731-23182936.html 分类“2024年中國大&amp;hellip;">
+<link rel="canonical" href="https://rudolphquan.github.io/post/sui-xiang-2025-1-30/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"随想2025-1-30","url":"https://rudolphquan.github.io/post/sui-xiang-2025-1-30/","description":"Thought 畸形的制度产生出畸形的群众衍生出畸形的事件。 事不关己高高挂起，沉默不言与我无关。无数的与我无关更加正向促进畸形的制度膨胀。 我想说什么，我能说什么，我会说什么。 Collection http://politics.people.com.cn/n/2013/1013/c70731-23182936.html 分类“2024年中國大\u0026hellip;","datePublished":"2025-01-30T23:19:47+08:00","dateModified":"2025-01-30T23:19:47+08:00","author":{"@type":"Person","name":"Rudolph Quan's blog"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"/images/avatar.png"},"name":"Rudolph Quan's blog"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://rudolphquan.github.io","name":"Rudolph Quan's blog","position":1},{"@type":"ListItem","item":"https://rudolphquan.github.io/post/sui-xiang-2025-1-30/","name":"随想2025-1-30","position":2}]}</script>
+<meta property="og:title" content="随想2025-1-30">
+<meta property="og:description" content="Thought 畸形的制度产生出畸形的群众衍生出畸形的事件。 事不关己高高挂起，沉默不言与我无关。无数的与我无关更加正向促进畸形的制度膨胀。 我想说什么，我能说什么，我会说什么。 Collection http://politics.people.com.cn/n/2013/1013/c70731-23182936.html 分类“2024年中國大&amp;hellip;">
+<meta property="og:url" content="https://rudolphquan.github.io/post/sui-xiang-2025-1-30/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Rudolph Quan's blog">
+<meta property="og:image" content="/images/avatar.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://rudolphquan.github.io/post/sui-xiang-2025-1-30/">
+<meta name="twitter:title" content="随想2025-1-30">
+<meta name="twitter:description" content="Thought 畸形的制度产生出畸形的群众衍生出畸形的事件。 事不关己高高挂起，沉默不言与我无关。无数的与我无关更加正向促进畸形的制度膨胀。 我想说什么，我能说什么，我会说什么。 Collection http://politics.people.com.cn/n/2013/1013/c70731-23182936.html 分类“2024年中國大&amp;hellip;">
+<meta name="twitter:image" content="/images/avatar.png">
+</head>
+
+<body class="">
+
+    
+<script>
+    (function () {
+        const getSystemTheme = () => {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                return 'dark';
+            }
+            return 'light';
+        };
+
+        const configDefault = 'dark';
+        const savedTheme = localStorage.getItem('theme');
+        const theme = savedTheme || configDefault || getSystemTheme();
+
+        if (theme === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+
+        if (!savedTheme) {
+            localStorage.setItem('theme', theme);
+        }
+    })();
+</script>
+<header class="mod-head">
+    <div class="mod-head__left">
+        <div class="mod-head__logo">
+            <a href="/">
+                
+                <img class="avatar" alt="avatar" src="/images/avatar.png">
+                
+            </a>
+        </div>
+    </div>
+
+    <div class="mod-head__right">
+        <span>
+            <button id="theme-toggle-sun" class="tiptap-button theme-toggle-sun" aria-label="Switch to dark mode">
+                <svg width="18" height="18" class="tiptap-button-icon" viewBox="0 0 24 24" fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M12 1C12.5523 1 13 1.44772 13 2V4C13 4.55228 12.5523 5 12 5C11.4477 5 11 4.55228 11 4V2C11 1.44772 11.4477 1 12 1Z"
+                        fill="currentColor"></path>
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12ZM12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9Z"
+                        fill="currentColor"></path>
+                    <path
+                        d="M13 20C13 19.4477 12.5523 19 12 19C11.4477 19 11 19.4477 11 20V22C11 22.5523 11.4477 23 12 23C12.5523 23 13 22.5523 13 22V20Z"
+                        fill="currentColor"></path>
+                    <path
+                        d="M4.22282 4.22289C4.61335 3.83236 5.24651 3.83236 5.63704 4.22289L7.04704 5.63289C7.43756 6.02341 7.43756 6.65658 7.04704 7.0471C6.65651 7.43762 6.02335 7.43762 5.63283 7.0471L4.22282 5.6371C3.8323 5.24658 3.8323 4.61341 4.22282 4.22289Z"
+                        fill="currentColor"></path>
+                    <path
+                        d="M18.367 16.9529C17.9765 16.5623 17.3433 16.5623 16.9528 16.9529C16.5623 17.3434 16.5623 17.9766 16.9528 18.3671L18.3628 19.7771C18.7533 20.1676 19.3865 20.1676 19.777 19.7771C20.1675 19.3866 20.1675 18.7534 19.777 18.3629L18.367 16.9529Z"
+                        fill="currentColor"></path>
+                    <path
+                        d="M1 12C1 11.4477 1.44772 11 2 11H4C4.55228 11 5 11.4477 5 12C5 12.5523 4.55228 13 4 13H2C1.44772 13 1 12.5523 1 12Z"
+                        fill="currentColor"></path>
+                    <path
+                        d="M20 11C19.4477 11 19 11.4477 19 12C19 12.5523 19.4477 13 20 13H22C22.5523 13 23 12.5523 23 12C23 11.4477 22.5523 11 22 11H20Z"
+                        fill="currentColor"></path>
+                    <path
+                        d="M7.04704 16.9529C7.43756 17.3434 7.43756 17.9766 7.04704 18.3671L5.63704 19.7771C5.24651 20.1676 4.61335 20.1676 4.22282 19.7771C3.8323 19.3866 3.8323 18.7534 4.22283 18.3629L5.63283 16.9529C6.02335 16.5623 6.65651 16.5623 7.04704 16.9529Z"
+                        fill="currentColor"></path>
+                    <path
+                        d="M19.777 5.6371C20.1675 5.24657 20.1675 4.61341 19.777 4.22289C19.3865 3.83236 18.7533 3.83236 18.3628 4.22289L16.9528 5.63289C16.5623 6.02341 16.5623 6.65658 16.9528 7.0471C17.3433 7.43762 17.9765 7.43762 18.367 7.0471L19.777 5.6371Z"
+                        fill="currentColor"></path>
+                </svg>
+            </button>
+            <button id="theme-toggle-moon" class="tiptap-button theme-toggle-moon" aria-label="Switch to light mode">
+                <svg width="18" height="18" class="tiptap-button-icon" viewBox="0 0 24 24" fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M12 2C10.0222 2 8.08879 2.58649 6.4443 3.6853C4.79981 4.78412 3.51809 6.3459 2.76121 8.17317C2.00433 10.0004 1.8063 12.0111 2.19215 13.9509C2.578 15.8907 3.53041 17.6725 4.92894 19.0711C6.32746 20.4696 8.10929 21.422 10.0491 21.8079C11.9889 22.1937 13.9996 21.9957 15.8268 21.2388C17.6541 20.4819 19.2159 19.2002 20.3147 17.5557C21.4135 15.9112 22 13.9778 22 12C22 11.5955 21.7564 11.2309 21.3827 11.0761C21.009 10.9213 20.5789 11.0069 20.2929 11.2929C19.287 12.2988 17.9226 12.864 16.5 12.864C15.0774 12.864 13.713 12.2988 12.7071 11.2929C11.7012 10.287 11.136 8.92261 11.136 7.5C11.136 6.07739 11.7012 4.71304 12.7071 3.70711C12.9931 3.42111 13.0787 2.99099 12.9239 2.61732C12.7691 2.24364 12.4045 2 12 2ZM7.55544 5.34824C8.27036 4.87055 9.05353 4.51389 9.87357 4.28778C9.39271 5.27979 9.13604 6.37666 9.13604 7.5C9.13604 9.45304 9.91189 11.3261 11.2929 12.7071C12.6739 14.0881 14.547 14.864 16.5 14.864C17.6233 14.864 18.7202 14.6073 19.7122 14.1264C19.4861 14.9465 19.1295 15.7296 18.6518 16.4446C17.7727 17.7602 16.5233 18.7855 15.0615 19.391C13.5997 19.9965 11.9911 20.155 10.4393 19.8463C8.88743 19.5376 7.46197 18.7757 6.34315 17.6569C5.21447 16.538 4.4624 15.1126 4.15372 13.5607C3.84504 12.0089 4.00347 10.4003 4.60897 8.93853C5.21447 7.47672 6.23985 6.22729 7.55544 5.34824Z"
+                        fill="currentColor"></path>
+                    <path
+                        d="M19 2C19.5523 2 20 2.44772 20 3V4H21C21.5523 4 22 4.44772 22 5C22 5.55228 21.5523 6 21 6H20V7C20 7.55228 19.5523 8 19 8C18.4477 8 18 7.55228 18 7V6H17C16.4477 6 16 5.55228 16 5C16 4.44772 16.4477 4 17 4H18V3C18 2.44772 18.4477 2 19 2Z"
+                        fill="currentColor"></path>
+                </svg>
+            </button>
+        </span>
+    </div>
+</header>
+<!-- <a href="#" id="back-to-top" style="display: inline;"> ^ </a> -->
+
+<article class="mod-post mod-post__type-post">
+    <header>
+        <h1 class="mod-post__title">
+            随想2025-1-30
+        </h1>
+    </header>
+
+    <div class="mod-post__meta">
+        <time datetime="2025-01-30">
+            2025-01-30
+        </time> • 83 分钟阅读 •
+         </div>
+
+
+
+            <div class="mod-post__entry wzulli">
+                
+                <h1 id="thought">Thought</h1>
+<p>畸形的制度产生出畸形的群众衍生出畸形的事件。</p>
+<p>事不关己高高挂起，沉默不言与我无关。无数的与我无关更加正向促进畸形的制度膨胀。</p>
+<p>我想说什么，我能说什么，我会说什么。</p>
+<h1 id="collection">Collection</h1>
+<p><a href="http://politics.people.com.cn/n/2013/1013/c70731-23182936.html">http://politics.people.com.cn/n/2013/1013/c70731-23182936.html</a></p>
+<h2 id="2024">分类“2024年中國大陸網絡事件”中的页面</h2>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/2024%E5%B9%B4%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E7%94%A8%E6%B2%B9%E7%BD%90%E8%BD%A6%E6%B7%B7%E8%BF%90%E4%BA%8B%E4%BB%B6">2024年中国大陆食用油罐车混运事件</a>
+<ul>
+<li>2024 年中国大陆食用油罐车混运事件由《新京报》曝光，引发广泛关注。罐车司机透露食品类和化工液体运输混用且不清洗是行业公开秘密。涉事企业汇福粮油集团等做出回应。报道记者韩福涛微博账号注销引网民关注。国务院食安办成立联合调查组，期间发货帮 APP 下架货车轨迹查询功能。有网友指出十几年前就有媒体曝光过类似乱象。法国世界报称中国当局试图掩盖丑闻。8 月 25 日，国务院食安办公布调查结果，对相关责任人进行查处，对涉案企业罚款并收缴经营许可，对事发地相关人员追责问责。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/2024%E5%B9%B4%E6%9D%B1%E4%BA%AC%E9%9D%96%E5%9C%8B%E7%A5%9E%E7%A4%BE%E6%92%92%E5%B0%BF%E5%A1%97%E9%B4%89%E4%BA%8B%E4%BB%B6">2024年東京靖國神社撒尿塗鴉事件</a>
+<ul>
+<li>2024 年 5 月 31 日，中国公民董光明在日本东京靖国神社入口处社号标上撒尿并涂鸦，以抗议日本政府允许福岛核电厂排放核废水入海。事件中还有许来玉负责拍片、姜卓君负责购买喷漆。事后董光明和许来玉回国并发表 “回国宣言”。日本警方逮捕了姜卓君并对董光明和许来玉发出通缉令。董光明称不怕日本警方，后因涉嫌敲诈勒索罪被杭州市公安机关采取刑事强制措施。11 月，姜卓君在东京地方法院首次公审中承认罪行，称涂鸦是为抗议福岛核处理水排海。12 月，东京法院判处姜卓君八个月徒刑。靖国神社对此事件表示 “极其遗憾”，日本外务大臣向中国政府表达担忧，中国外交部发言人毛宁回应称海外中国公民应遵守当地法律，以理性方式表达诉求。哥伦比亚大学访问学者张丰批评董光明的行为是 “流量伪爱国主义”。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E2%80%9C%E8%83%96%E7%8C%AB%E2%80%9D%E8%B7%B3%E6%B1%9F%E4%BA%8B%E4%BB%B6">“胖猫”跳江事件</a>
+<ul>
+<li>2024 年 4 月 11 日，20 岁的游戏代练 “胖猫”（本名刘杰）在重庆长江大桥跳江自杀。2021 年底，“胖猫” 与谭竹在游戏中相识并确立恋爱关系，2023 年 10 月 “胖猫” 赴重庆生活并独自租房，后因争吵谭竹要求冷静，“胖猫” 转账后自杀。“胖猫” 父亲与谭竹和解，但姐姐认为谭竹应付出代价并在网络传播此事，引发关注。5 月 3 日，大量网民点外卖纪念 “胖猫”，部分品牌 “发空包” 引争议。5 月 19 日，警方通报谭竹不构成诈骗犯罪，对侵犯隐私一事仍在调查，“胖猫” 姐姐账号被封禁。5 月 24 日，《央视新闻》报道事件细节及蹭热点案例。此外，有网民冒充当事人被处罚，品牌道歉并处罚涉事门店，事件在越南也引发关注。《中国青年报》发表文章对 “胖猫” 之死表示惋惜并批评网络谣言和暴力。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E4%B8%8A%E6%98%A5%E5%B1%B1">上春山</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%80%AB%E6%95%A6%E8%81%96%E6%BD%98%E5%85%8B%E6%8B%89%E6%96%AF%E7%81%AB%E8%BB%8A%E7%AB%99%E9%8B%BC%E7%90%B4%E4%BA%8B%E4%BB%B6">倫敦聖潘克拉斯火車站鋼琴事件</a>
+<ul>
+<li>2024年1月19日，英國YouTuber兼鋼琴家布倫丹·卡瓦納在倫敦聖潘克拉斯車站的公共鋼琴上直播演奏時，其遇到一群手持中華人民共和國國旗的華人，由于他们不希望上镜，因此他們要求卡瓦納刪除影片。雙方為此發生爭執，其後英國交通警察介入。這段直播影片在網路上廣泛流傳，引起網路對中華人民共和國海外影響力圈子的關注，以及在不同體制下所引起價值觀和行動的衝突之相關討論[1]。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%A4%9C%E9%A8%8E%E9%96%8B%E5%B0%81">夜騎開封</a>
+<ul>
+<li>夜騎開封是一項由中華人民共和國河南省鄭州市的大學生發起的夜間單車騎行活動。參與者騎乘公共自行車從鄭州出發，沿鄭開大道，前往約50公里外的開封市。該活動自2024年6月興起，源於4名女大學生為了品嚐開封的灌湯包而進行的一次騎行，並在影片分享網站上分享，引發廣泛關注。隨著活動的流行，參與人數激增，至2024年11月8日達到高峰，據報導至少有20萬人參加，造成當地交通嚴重擁堵。為吸引更多學生參與，開封市當局對多個景點實行免費開放。法国国际广播电台、美國之音和《鏡新聞》等媒體指出，參與夜騎開封的人數規模甚至遠超2022年抗議中共中央總書記習近平「動態清零政策」的白紙運動。活動與政治無關，而河南省當局為應對人數激增的情況，實施禁行措施，呼籲民眾減少長途騎行，並要求學生限期返校，同時下令省內多所大專院校實行一個月的全校封閉管理。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%AE%89%E6%B4%B5%E6%96%87%E4%BB%B6%E6%B3%84%E9%9C%B2%E4%BA%8B%E4%BB%B6">安洵文件泄露事件</a>
+<ul>
+<li>安洵文件泄露事件，指的是2024年2月16日，一家名為「安洵信息」（英文名稱iSoon或Anxun）的中國公司内部文件被發布到GitHub上，文件顯示该公司幫助中國政府的黑客攻擊行為，透過佯裝成資安公司，對全球進行網路間諜活動，相關事件曝光，引起了國際關注。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%B1%B1%E8%A5%BF%E5%A5%A5%E7%91%9E%E9%9D%9E%E6%B3%95%E6%94%B6%E8%B4%AD%E9%81%97%E4%BD%93%E4%BA%8B%E4%BB%B6">山西奥瑞非法收购遗体事件</a>
+<ul>
+<li>2024 年 8 月，山西奥瑞生物材料有限公司因涉嫌非法收购遗体和残肢引发关注。该公司被指控在 2015 年至 2023 年期间，通过与多地殡仪馆合作非法购买非因病死亡遗体用于生产同种异体骨植入性材料，涉及尸体数量高达数千具，涉案金额超 3 亿元。事件还涉及多家单位。山西奥瑞成立于 1999 年，是中国首家获准生产同种骨移植材料的企业，承担多项科研项目，在骨科植入材料领域有多项发明专利。嫌疑人李宝兴曾受国家表扬并被列为劳动模范。太原市公安局调查称该公司在 2017 年至 2019 年控制四家火葬场盗窃、肢解尸体，犯罪嫌疑人已供认不讳。2024 年 8 月案件移送至太原市检察院审查起诉，北京律师易胜华称非此案辩护律师且收到司法局来电，多家媒体相关报道被删。国药集团药业股份有限公司也发布公告称与山西奥瑞无业务来往。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%9D%8E%E5%AE%9C%E9%9B%AA%E4%BA%8B%E4%BB%B6">李宜雪事件</a>
+<ul>
+<li>李宜雪，自稱於2022年4月14日遭派出所輔警猥褻，并在向警方指控后被送至江西省精神病院强制入院56日。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%B1%9F%E8%A5%BF%E4%B8%8A%E9%A5%B6%E6%8F%90%E7%81%AF%E5%AE%9A%E6%8D%9F%E4%BA%8B%E4%BB%B6">江西上饶提灯定损事件</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E7%A7%A6%E6%9C%97%E5%B7%B4%E9%BB%8E%E4%B8%A2%E4%BD%9C%E4%B8%9A%E4%BA%8B%E4%BB%B6">秦朗巴黎丢作业事件</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E8%B4%B5%E5%B7%9E%E6%B6%88%E9%98%B2%E6%A0%93%E4%BA%8B%E4%BB%B6">贵州消防栓事件</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E9%82%AF%E9%83%B8%E5%88%9D%E4%B8%AD%E7%94%9F%E6%9D%80%E4%BA%BA%E6%A1%88">邯郸初中生杀人案</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E9%AB%98%E5%90%9B%E9%9B%A8">高君雨</a></li>
+</ul>
+<h2 id="heading">分类“中华人民共和国地方政府丑闻”中的页面</h2>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/2019%E5%86%A0%E7%8A%B6%E7%97%85%E6%AF%92%E7%97%85%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E5%9C%B0%E6%96%B9%E6%94%BF%E5%BA%9C%E7%96%AB%E6%83%85%E5%BA%94%E5%AF%B9%E7%9B%B8%E5%85%B3%E4%BA%89%E8%AE%AE">2019冠状病毒病中国大陆地方政府疫情应对相关争议</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/2019%E5%86%A0%E7%8B%80%E7%97%85%E6%AF%92%E7%97%85%E6%B9%96%E5%8C%97%E7%9C%81%E7%96%AB%E6%83%85%E7%9B%B8%E9%97%9C%E5%9F%B7%E6%B3%95%E7%88%AD%E8%AD%B0">2019冠狀病毒病湖北省疫情相關執法爭議</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/2021%E5%B9%B47%E6%9C%88%E6%B2%B3%E5%8D%97%E6%B0%B4%E7%81%BE%E7%9B%B8%E5%85%B3%E4%BA%89%E8%AE%AE">2021年7月河南水灾相关争议</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/2022%E5%B9%B4%E6%96%B0%E7%96%86%E4%B9%8C%E9%B2%81%E6%9C%A8%E9%BD%90%E9%AB%98%E5%B1%82%E4%BD%8F%E5%AE%85%E6%A5%BC%E7%81%AB%E7%81%BE">2022年新疆乌鲁木齐高层住宅楼火灾</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/2022%E5%B9%B4%E6%B2%B3%E5%8D%97%E5%A4%9A%E5%AE%B6%E6%9D%91%E9%95%87%E9%93%B6%E8%A1%8C%E5%8F%96%E6%AC%BE%E9%9A%BE%E4%BA%8B%E4%BB%B6">2022年河南多家村镇银行取款难事件</a>
+<ul>
+<li>2022年河南多家村镇银行取款难事件是指2022年4月18日起河南省境内的4家村镇银行，包括禹州新民生村镇银行、上蔡惠民村镇银行、柘城黄淮村镇银行、开封新东方村镇银行，在几乎同一时间毫无预警地关闭线上取款和转账渠道，使得儲戶無法提取存款的金融弊案。该事件引发储户大规模恐慌，開始数次维权和抗议活动。中国银保监会表示，该案起因于银行股東內外勾結[9]。据报道，其中至少涉及数百亿元人民币资金，约四十万储户受到影响</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/2022%E5%B9%B4%E8%B4%B5%E5%B7%9E%E7%9C%81%E4%B8%89%E9%83%BD%E5%8E%BF%E5%AE%A2%E8%BD%A6%E4%BE%A7%E7%BF%BB%E4%BA%8B%E6%95%85">2022年贵州省三都县客车侧翻事故</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/2024%E5%B9%B4%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E7%94%A8%E6%B2%B9%E7%BD%90%E8%BD%A6%E6%B7%B7%E8%BF%90%E4%BA%8B%E4%BB%B6">2024年中国大陆食用油罐车混运事件</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%9D%8E%E6%96%87%E4%BA%AE">李文亮</a>
+<ul>
+<li>李文亮（1985年10月12日[1]—2020年2月7日[a]），满族[11]，辽宁北镇人，武汉市中心医院眼科医生，中国共产党党员[12]。李文亮医生于2019年12月30日在自己微信与同行交流，认为出现SARS提醒同行注意保护。 因而成为2019冠状病毒病疫情中率先向外界披露疫情的医疗人员之一，而被称为“疫情吹哨人”[13][14]，2020年1月3日辖区派出所因其“在互联网上发布不实言论”提出警示和训诫[13]，但他仍持续在第一线工作，于1月10日左右出现症状，因为病情严重进入加护病房观察，1月31日确诊感染2019冠狀病毒病[15]（2月1日通过其微博公布[16][17]）。2月7日武汉市中心医院微博通報李文亮於凌晨2时58分病逝，年僅34岁[18][10]。3月19日，经调查，国监委调查组建议撤销训诫。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E4%B8%B0%E5%8E%BF%E7%94%9F%E8%82%B2%E5%85%AB%E5%AD%A9%E5%A5%B3%E5%AD%90%E4%BA%8B%E4%BB%B6">丰县生育八孩女子事件</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%8C%97%E4%BA%AC%E5%AE%89%E5%85%83%E9%BC%8E">北京安元鼎</a>
+<ul>
+<li>北京安元鼎安全防范技术服务有限公司是一家名义上从事保安相关工作，而实质上主营业务为拦截、关押、遣返上访者的公司。该公司因涉嫌“非法拘禁”和“非法经营”两项罪名而遭到立案调查，并且因为与某些地方政府存在合作关系而引起争议。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%B2%B3%E5%8C%97%E5%A4%A7%E5%AD%A6%E2%80%9C10%C2%B716%E2%80%9D%E4%BA%A4%E9%80%9A%E8%82%87%E4%BA%8B%E6%A1%88">河北大学“10·16”交通肇事案</a>
+<ul>
+<li>河北大学新校区“10·16”交通肇事逃逸案、“我爸是李刚”事件是指2010年10月16日晚发生在中華人民共和國河北省保定市河北大学新校区的一起醉酒驾驶交通肇事逃逸案件，造成在校学生一死一伤[1]。事发后，肇事者因官二代身份若無其事照樣開車，被抓获后因一句「我爸是李剛」而引起網民與社會舆论譁然。后来更爆出李刚收入異常、曾帮助河北大学校长调查举报其剽窃他人文章的人的丑闻，使原本一起单纯的交通事故发展到揭露行政人员权力腐败黑幕的事件。事件最终以受害者家属撤诉、媒体噤声、律师遭解雇、報導此事件的记者被谈话而收场[2][3]。2011年1月30日上午9时，河北省望都县人民法院对本案作出一审宣判，被告人李启铭以交通肇事罪被判6年有期徒刑。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E8%BF%81%E5%AE%89%E6%80%A7%E4%BE%B5%E6%A1%88">迁安性侵案</a>
+<ul>
+<li>迁安性侵案是2017-2018年發生於河北省迁安市的未成年少女被轮奸、强迫卖淫案。案件涉及迁安市公安局党委副书记康永，以及迁安市人大代表王双[1]。消息人士称案件另有数十名涉案人[2]。这是中国男性权贵买处、嫖幼成风的背景下，地方权贵涉案的典型案件。[來源請求]涉案官员康永早年在电视讲话表示要将迁安打造成治安高地平安绿洲，性侵案发生后电视讲话引起舆论反响[3]。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E9%A6%86%E9%99%B6%E9%97%AB%E5%AE%81%E4%BA%8B%E4%BB%B6">馆陶闫宁事件</a>
+<ul>
+<li>闫宁事件指2011年8月，因29岁的闫宁出任河北省馆陶县委副书记、代县长一事引发的广泛争议与质疑。根据专家分析，闫宁实质违规的官场捷径，其晋升途径和程序不可思议，绝非破格提拔年轻干部可以解释[1]，该事件凸显现行中国内地公务人员和党政官员职位晋升缺少有效的制约，由此衍生出“官僚世袭化”、“官员家族化”等诟病。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%8C%97%E6%9E%81%E9%B2%B6%E9%B1%BC%E4%BA%8B%E4%BB%B6">北极鲶鱼事件</a>
+<ul>
+<li>北极鲶鱼事件，是指2023年3月，新浪微博昵称为“北极鲶鱼”的网友在网络上炫富，侮辱网民。其自称祖父是前深圳交通运输局局长，家中存款“有9位数”，多次使用由“支那”（中国的蔑称）衍生的词语侮辱反驳她的网友，事件随后在网络上发酵。3月24日，深圳交通运输局发布通报称将会调查该事件。2023年10月10日，深圳市监察委员会通报“北极鲶鱼”祖父钟庚赐存在贪腐问题并进行处分。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%8D%97%E4%BA%AC%E7%8E%84%E5%A5%98%E5%AF%BA%E7%89%8C%E4%BD%8D%E4%BA%8B%E4%BB%B6">南京玄奘寺牌位事件</a>
+<ul>
+<li>南京玄奘寺牌位事件指南京玄奘寺供养的6塊超度牌位于2022年7月引发的社會爭議事件。被超度[1][2][3][4]的有5名南京大屠杀日本战犯，还有在屠殺期間保護學生而抑鬱自殺的美國傳教士魏特琳。事源舉報牌位的人混淆了佛教裡「超度」牌位及「供奉」牌位，超度是希望惡鬼不要為禍人間、希望惡人不再犯错，往生牌位用黃色紙；供奉牌位又稱长生牌位，祈福长生，用紅色紙。[1][2][3][4]牌位所在的地藏殿中的地藏菩萨以慈悲心救度在阴间的鬼魂而著稱；但輿論早期普遍將之理解為「供奉战犯」的祈福长生牌位，並猜測立超度牌位的吴啊萍是否支持日本軍國主義。不久，中共南京市委調查後通報，吴啊萍是因為被战犯鬼魂糾纏，为了“解冤释结”而驅鬼自救。吴啊萍因涉嫌寻衅滋事罪被刑事拘留，管辖宗教事务的数位官员被处分。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E4%B8%A5%E6%98%A5%E9%A3%8E%E4%BA%8B%E4%BB%B6">严春风事件</a>
+<ul>
+<li>严春风事件又称严书记事件，是指2018年5月发生的一起中国网络反腐事件。5月10日晚间，中国共产党广安市委员会副书记严春风的前妻李向阳因不满老师对她女儿的教育方式，要求学校开除涉事教师。其行为被网络曝光后，引发中国舆论高度关注“严书记”，并且导致严春风于5月14日被中国共产党四川省纪律检查委员会、四川省监察委员会介入调查。5月18日，四川省纪委监委称广安市委副书记严春风涉嫌严重违纪违法，目前正接受纪律审查和监察调查。严春风前妻的一番言论就让其在4天内落马，事件由此升级为一次中国网络驱动的反腐事件。[1]</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%88%91%E5%8F%AA%E4%B8%BA%E9%A2%86%E5%AF%BC%E6%9C%8D%E5%8A%A1">我只为领导服务</a>
+<ul>
+<li>我只为领导服务，这句话出自中國網際社區天涯社区上的一段四川省成都市雙流區一名交通警察的執法影片。2010年12月11日，发帖人刘明到四川省成都市双流体育场参加2010首届西部动漫游戏节博览会活动，车辆堵塞停在大门口等待时，双流县公安局交通警察大队勤务二中队副中队长梁忠因为“领导的车马上就要来了”，怒拍车窗催促快走，在车主与之理论时，该交警说“我是为领导服务的，是领导重要还是你们这些人重要？！”[1]双流县公安局2010年12月13日在天涯社区发帖表示，已经对梁忠停职，并且局领导已带领梁忠到当事人单位道歉。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%B9%B3%E5%AE%89%E7%BB%8F">平安经</a>
+<ul>
+<li>《平安经》为中国吉林省公安厅原党委副书记、常务副厅长贺电所著之书。该书标称由人民出版社及群众出版社联合出版，但版权页只登记了群众出版社的相关信息，且人民出版社亦否认参与出版。2019年12月初版，2020年5月再版，售价299元人民币[1][2]。全书的主要内容为以「××平安」形式的造句，与数字、地名、年龄、行业、器官等词语进行组合。2020年7月，该书在网络上引发讨论并受到诸多批评。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%B9%BF%E4%B8%9C%E6%81%A9%E5%B9%B3%E9%87%91%E8%9E%8D%E9%A3%8E%E6%B3%A2">广东恩平金融风波</a>
+<ul>
+<li>广东恩平金融风波，也称广东恩平市领导非法集资案，是指1990年代中华人民共和国广东省江门市下辖恩平市发生的局部性金融风险事件，在情况最严重的1995年6月和1996年8月曾两次出现严重的银行挤兑事件[1]，一度引发广东省全省金融瘫痪[2]。广东省恩平市人民政府领导干部直接指挥当地金融机构乱集资、乱拆借总额超过人民幣100多亿元，账外贷款人民幣30多亿元，引发两次金融挤兑事件，导致恩平市地方银行网点一度普遍歇业或退出当地市场，最终迫使中国的国有银行系统两次共调集至少人民幣70多亿元以保障支付度过危机，使中国建设银行、中国农业银行、广东发展银行[3]等金融机构和恩平市乃至广东省地区的经济遭受巨大损失。事件发生后，恩平市经济严重衰退，从“中国百强县”一度跌落为广东省最落后的八个县之一[4]。同时，这一事件也促使中国大陆加快了对金融业改革的进程，实行银行系统的垂直管理，并对银行、信托、证券、保险业等实行分业经营、分业监管[4]。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%85%8B%E6%8B%89%E7%8E%9B%E4%BE%9D%E5%A4%A7%E7%81%AB">克拉玛依大火</a>
+<ul>
+<li>克拉瑪依市火灾發生於1994年12月8日中华人民共和国新疆维吾尔自治区克拉瑪依市。市教育局为欢迎上级教委，组织15校学生文艺表演，表演期間舞台幕布因舞臺燈过热而自燃。火災釀成325人死亡[注 2]，其中288人[注 3]为中小学生。鉴定指，近百名孩子是因踩踏身亡，而非燒傷死亡。[4][6]许多孩子屍身上有成人的鞋印，引起媒體責問。[4][6]由於火災時有人向學生喊“让领导先走”，經傳媒報導後引发轩然大波，几乎成了此事件的代名词[7]。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E4%BB%9D%E5%8D%93%E4%BA%8B%E4%BB%B6">仝卓事件</a>
+<ul>
+<li>仝卓事件，是中国艺人仝卓于2020年自曝曾伪造应届生身份参加高考，引发舆论争议的事件，是中国内地娱乐圈乱象之一。经临汾市监察委员会调查，确定仝卓存在伪造应届生身份、违规入党之行为。随后，山西省招生考试管理中心宣布其高考成绩无效，中共临汾市委组织部对其党员身份不予承认，中央戏剧学院校方撤销其毕业证书。与此同时，多名公职人员受事件牵连而被处分。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%B1%B1%E8%A5%BF%E4%BA%BF%E5%85%83%E8%AD%A6%E5%AF%9F%E9%81%87%E5%AE%B3%E6%A1%88">山西亿元警察遇害案</a>
+<ul>
+<li>山西亿元警察遇害案、山西警察夫妇遇害案是指2010年11月12日发生在山西省临汾市洪洞县县城中心广场东侧鸿安大厦高档小区内一对警察夫妇被杀的案件。在这对警察夫妇被杀后，根据媒体披露死者警察生前超生、作为公务员开办企业、对外放高利贷等严重违反中国法律行为引发民众热议。[1]</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%9D%8E%E6%AD%A3%E6%BA%90%E8%A2%AD%E8%AD%A6%E4%BA%8B%E4%BB%B6">李正源袭警事件</a>
+<ul>
+<li>袭击者李正源为山西省公安厅副厅长李亚力之子，其在10月13日早晨醉驾越野车违反交通规则，被交警拦截。李正源因不满交警处罚，殴打值班交警夏坤[1]。事后交警总队集体隐瞒并作伪证；事发后李亚力利用职权打击值班民警。2012年12月，李亚力被停职调查[2]。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%9D%8E%E5%AE%9C%E9%9B%AA%E4%BA%8B%E4%BB%B6">李宜雪事件</a>
+<ul>
+<li>李宜雪，自稱於2022年4月14日遭派出所輔警猥褻，并在向警方指控后被送至江西省精神病院强制入院56日。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%9D%8E%E6%80%9D%E4%BE%A0%E6%A1%88">李思侠案</a>
+<ul>
+<li>李思侠案，是「女工程师帮村民举报污染被判刑」的案子。發生於中國陕西省安康市石泉县城關鎮双喜村，2008年有石料加工厂入駐，污染農田和食水、運石車毀壞村路，而且村書記邱兴银獲分得開採權，被村民懷疑貪腐。李思侠（1963年生，女），双喜村第一位走出村子的大学生（註：石泉县在陝、川的秦嶺，「過去与外界没有通路，令村里的年轻人找对象都难，因此村民对路十分在乎」[1]），曾是陝西长庆油田的國企工程师，傳媒普遍以「陝西女工程师」稱之，雖然已遷至西安居住，不過自2013年幫村民上訪舉報石料加工厂28次。2018年9月被公安拘捕，公安指她是当地“首起涉恶势力”的头目。[2][3]2019年6月13日，石泉县法院一审宣判，寻衅滋事罪判刑两年六个月；2020年6月16日，李思侠在二審期間获合议庭准以取保候审，是2018年9月以來首與家人团聚。2020年7月28日，安康市中级人民法院批評一審“认定事实不清，证据不足，且在案件审理中违反诉讼程序”，发回重审。[1]輿論普遍質疑女工程師怎樣「涉恶势力」。[4]</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E9%9F%A9%E5%B3%B0%E6%97%A5%E8%AE%B0">韩峰日记</a>
+<ul>
+<li>局長日记[1]，又名韩峰日记、香艳日记、局长性爱日记，作者为时任中华人民共和国广西壮族自治区来宾市烟草专卖局局长韩峰，写作时间为2007年9月24日至2008年1月31日。于2010年2月，韩峰的日记由名为“含仙子”的网友发布于天涯社区，该事件被称为“日记门”事件。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%A6%86%E6%9E%97%E9%93%81%E7%AC%BC%E5%A5%B3%E4%BA%8B%E4%BB%B6">榆林铁笼女事件</a>
+<ul>
+<li>榆林铁笼女事件是中国大陆2022年继丰县八孩母亲事件后又被揭露出来的一起非法虐待囚禁精神病妇女案。事发陕西佳县金明寺镇元团峁沟村，首先在2022年3月1日微信公众号“现实的模样”发布的“陕西佳县暴出‘铁笼女’，悲惨遭遇堪比江苏丰县的铁链女”一文中披露。[1][2]</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%B0%B8%E5%9F%BA%E9%9D%9E%E6%B3%95%E9%9B%86%E8%B5%84%E6%A1%88">永基非法集资案</a>
+<ul>
+<li>永基非法集资案，是1998年发生在中华人民共和国天津市南开区涉案达43亿人民币的巨额非法集资诈骗大案。[1]由于该案件受到主政天津市公安、检察、司法系统十余年的天津市政协主席、市政法委书记宋平顺的庇护，在案发近十年后仍然得不到解决，直至曾干涉此案的高官宋平顺在2007年自杀后，该案件的脉络才得以理清并公之于众。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%B2%B3%E5%8D%97%E8%A1%80%E7%A5%B8">河南血祸</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%A4%A9%E6%B4%A5%E5%9B%BE%E4%B9%A6%E9%A6%86%E5%A4%96%E7%AB%8B%E9%9D%A2%E6%94%B9%E9%80%A0%E4%BA%8B%E4%BB%B6">天津图书馆外立面改造事件</a>
+<ul>
+<li>天津图书馆外立面改造事件，是中華人民共和國天津市文化中心新天津图书馆在未征得日本建築設計師山本理显的同意下更改建築外立面的事件，引起建築師本人的憤怒。华裔日籍建筑评论者方振宁在博客和微博中揭露了这一事件内幕。[1]方振宁指出，相关责任人为天津市市长黄兴国、天津市主管规划与城乡建设的副市长熊建平和天津市城乡建设和交通委员会主任窦华港等。而此前，熊建平也曾因个人好恶而下令拆除天津机场雕塑“飞翔”，并引起中央电视台等媒体的批评。[2]</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%A4%A9%E6%B4%A5%E5%9C%B0%E9%93%81%E8%85%90%E8%B4%A5%E6%A1%88">天津地铁腐败案</a>
+<ul>
+<li>天津地铁腐败案，是2008年天津市地铁总公司党委书记王春清向中共中央纪律检查委员会检举地铁公司总经理高怀志涉嫌贪污腐败后，高怀志在被中纪委“双规”期间又检举了王春清涉嫌贪污腐败的一起贪腐高官互相举报最终导致双双“落马”并被捕的戏剧性腐败大案。此案被业内人士称之为天津地铁系统的“一号腐败大案”[1]。因为此案件导火索是领导干部“狗咬狗”式的举报[2]，又牵扯出省部级官员的情妇、“干女儿”且涉案金额重大，引发了社会的广泛讨论与关注[3]。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%A4%A9%E6%B4%A5%E6%9C%BA%E5%9C%BA%E9%9B%95%E5%A1%91%E8%A2%AB%E6%8B%86%E4%BA%8B%E4%BB%B6">天津机场雕塑被拆事件</a>
+<ul>
+<li>天津机场雕塑被拆事件是指2008年4月7日下午天津市副市长熊建平在视察即将投入使用的天津滨海国际机场新航站楼时，因“不喜欢这颜色”“不喜欢杨柳青年画”的个人好恶原因而勒令限期拆除斥资200万、耗时2年的雕塑《飞翔》而引发大量批评的争议性事件[1]。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%B7%B2%E9%98%85%E9%97%A8">已阅门</a>
+<ul>
+<li>已阅门，指2009年8月11日浙江省宁波市鄞州区政府网站互动平台中，网民咨询邱隘镇道路出行难的问题仅仅获得“已阅”两字回复的事件。[1]这一事件遭到了当事人和网民的讽刺和声讨，也使中国大陆政府和政府网站中存在的官僚作风得到媒体和社会的关注。[2]</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%88%91%E5%8F%94%E5%8F%94%E6%98%AF%E9%87%91%E5%9B%BD%E5%8F%8B">我叔叔是金国友</a>
+<ul>
+<li>我叔叔是金国友发生于中華人民共和國浙江省温州市永嘉县，是一起类似“我爸是李刚”的特權事件。2010年12月17日九时多，永嘉县瓯北镇罗中南路和双塔路的交叉口发生一起交通事故，一辆起亚轿车与一辆奥拓车发生擦撞。交警赶到现场后，发现驾驶员金建兄一身酒气，交警要求双方驾驶员配合进行酒精检测时，金建兄随即对員警破口大骂，后又以电话召集多人毆打交警，并宣称：“我叔叔是金国友，跟老子作对的话，非弄死你们不可！”据网友调查，金国友曾任温州市永嘉县公安局副局长、交警大队大队长，但於2009年已退居二线。12月20日下午五时许，金建兄在金国友的勸告下，向警方投案自首。20日晚，警方认定金建兄的行为已构成寻衅滋事和阻碍执行公务，决定将其行政拘留20日[1]。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/2013%E5%B9%B4%E9%87%8D%E5%BA%86%E5%AE%98%E5%9C%BA%E4%B8%8D%E9%9B%85%E7%85%A7%E4%BA%8B%E4%BB%B6">2013年重庆官场不雅照事件</a>
+<ul>
+<li>2013年重庆官场不雅照事件，是指2013年1月，揭发的一系列涉及中华人民共和国、中国共产党重庆地方官员的不雅照事件。事件原由2008年、2009年期间，重庆永煌公司肖烨通过透露与当地官员有关的性爱视频，以达到控制官场的目的。当时是重庆市委书记薄熙来的掌控期间，事情一直被隐瞒到王立军事件及薄熙来事件后才曝光。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%B7%AB%E5%B1%B1%E7%AB%A5%E5%85%BB%E5%AA%B3%E4%BA%8B%E4%BB%B6">巫山童养媳事件</a>
+<ul>
+<li>巫山童养媳事件发生于重庆市巫山县，是喪父女童被做为童养媳送养，遭遇强奸，后由当地政府工作人员以违法的形式办理结婚登记的事件。2016年，事件经媒体曝光后，引发关注。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E7%8E%8B%E7%AB%8B%E5%86%9B%E4%BA%8B%E4%BB%B6">王立军事件</a>
+<ul>
+<li>王立军事件指时任中华人民共和国重庆市人民政府副市长兼重庆市公安局局长的王立军于2012年2月6日私自前往美国驻成都总领事馆滞留（被法院判决为叛逃）的事件。此事件在中国国内外造成重大影响。該事件是海伍德死亡案复查、王立军案和薄熙來下台的直接开端。据媒体报道，王立軍因向时任中共中央政治局委员兼重庆市委书记薄熙来报告薄熙来妻子谷开来杀死海伍德的案情，遭到薄熙来怀疑。数天后出于自身人身安全的考虑，于2012年2月6日私自前往美国驻成都总领事馆，并提出了政治避难申请。時任美國國務卿（亦即美国外交部长）希拉里·克林顿決定拒绝向王立軍提供政治避难。此后美国国务院同北京中央进行联系，中央同意派出中国国家安全部高级官员将王立军帶往北京并进行调查。同年9月17日、18日，王立军徇私枉法、叛逃、滥用职权、受贿案於成都市中級人民法院一審開庭審理[1]，9月24日早上於成都市中級人民法院宣判王立軍入獄15年[2]，剝奪政治權利1年，王立军當庭表示不上訴[3]。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%94%90%E6%85%A7%E6%A1%88">唐慧案</a>
+<ul>
+<li>唐慧案指中国湖南永州居民唐慧（1973年10月1日—）的女儿“乐乐（化名）”（1995年10月5日—）被强奸及强迫卖淫案、唐慧因上访而被劳动教养、后唐慧起诉永州劳教委等一系列案件及事件[a]。该案引起媒体广泛关注，引发对中国劳教制度的讨论质疑。此案还引发了信访与“稳控”合力导致的司法不公，对判决结果因压力导致量刑过重的讨论质疑。[1]</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%9B%B9%E5%8D%9A%E6%96%87%E4%BA%8B%E4%BB%B6">曹博文事件</a>
+<ul>
+<li>曹博文事件，是指时任湖南省冷水江市人事局局长曹长清为尚在读大学的儿子曹博文找到财政局工资统发中心的工作[1]，且经过了市委市政府相关领导的层层批示。后经媒体曝光，曹博文的编制及聘用资格被取消[2]。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E9%82%B5%E9%98%B3%E6%94%BF%E5%BA%9C%E6%B2%A1%E6%94%B6%E5%A9%B4%E5%84%BF%E4%BA%8B%E4%BB%B6">邵阳政府没收婴儿事件</a>
+<ul>
+<li>邵阳当局没收婴儿事件，案件于2011年曝光，中国湖南省邵阳市发生的一起抢婴牟利恶性事件。湖南邵阳计生部门为收取社会抚养费，将十余名“非法”婴幼儿被强行抱走，送入邵阳福利院，统一改姓“邵”。部分后来找到下落，有些已被收养在海外。这些被当地政府抢夺走的婴儿被称媒体和民间称为“邵氏孤儿”或“邵氏弃儿”。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E7%81%8C%E5%8D%97%E5%8E%BF%E5%A5%B3%E8%BE%85%E8%AD%A6%E6%95%B2%E8%AF%88%E5%85%AC%E8%81%8C%E4%BA%BA%E5%91%98%E6%A1%88">灌南县女辅警敲诈公职人员案</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E7%8B%AC%E5%B1%B1%E5%8E%BF%E5%80%BA%E5%8A%A1%E9%97%AE%E9%A2%98">独山县债务问题</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/2013%E5%B9%B4%E6%B5%B7%E5%8D%97%E4%B8%87%E5%AE%81%E6%A0%A1%E9%95%BF%E5%AE%98%E5%91%98%E6%80%A7%E4%BE%B5%E5%B9%BC%E5%A5%B3%E6%A1%88">2013年海南万宁校长官员性侵幼女案</a>
+<ul>
+<li>万宁校长官员性侵幼女案，是2013年5月8日发生在中国海南省万宁市的性侵幼女案。后郎小学6名六年级小学生被该校校长陈在鹏及万宁市市房管局职员冯小松携带到宾馆开房[1]。[2][3]</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E7%99%BD%E9%AB%AE%E9%81%8B%E5%8B%95">白髮運動</a>
+<ul>
+<li>自2023年2月份起，中華人民共和國政府在多個省市試圖推行醫療保障改革，引起了抗議運動[1]，抗议主体多为退休老年人，故又被媒体称为“白发运动”或“白发革命”[2][3][4][5]。首要发生地為湖北省武漢市。當地退休人員[註 1]因不滿武漢市政府推行醫保改革中減少每月個人賬戶補貼金額之政策，進而發起示威游行[1][6]。此次示威有時被認為是白紙運動號召民眾抗議社會不合理問題的延續[7]。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%B9%BF%E5%B7%9E%E8%B6%8A%E7%A7%80%E5%8C%BA%E5%A7%94%E5%B8%B8%E5%A7%94%E6%AE%B4%E6%89%93%E7%A9%BA%E5%A7%90%E4%BA%8B%E4%BB%B6">广州越秀区委常委殴打空姐事件</a>
+<ul>
+<li>2012年8月29日下午16时50分，广州市越秀区委常方大国及其夫人因在搭乘中国南方航空公司由合肥飞往广州的CZ3874航班上登机较晚，因放置行李的问题与南航周姓空姐发生争执，并涉嫌殴打对方，引发舆论关注与声讨。[1][2]8月29日晚，南航空姐在其微博中称，一对夫妇因对其放置行李不满，用行李箱砸在她身上。此后，其微博被大量转发引起关注。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%9E%97%E5%98%89%E7%A5%A5%E4%BA%8B%E4%BB%B6">林嘉祥事件</a>
+<ul>
+<li>林嘉祥事件是2008年10月29日发生于中国广东省深圳市南山区科技园的一宗在职高级公务员疑似猥亵女童未遂事件（事后官方对录像和目击证人的调查后称林并未有猥亵行为）。[1][2]</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E8%8B%8F%E5%B7%9E%E5%92%8C%E6%9C%8D%E4%BA%8B%E4%BB%B6">苏州和服事件</a>
+<ul>
+<li>苏州和服事件[1][2][3]是2022年8月14日从新浪微博开始，通过网络传播的舆论事件。8月10日，女Cosplayer在苏州淮海街穿着浴衣式和服拍摄，被警察以涉嫌寻衅滋事罪带离。8月14日，女Cosplayer在新浪微博发文讲述事件经过，引起舆论广泛关注[4]。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E8%B0%AD%E7%A7%A6%E4%B8%9C%E4%BA%8B%E4%BB%B6">谭秦东事件</a>
+<ul>
+<li>谭秦东事件是指2018年1月10日，中国广州医生谭秦东因在网上发了一篇批评鸿茅药酒“有毒”的帖子，而在广州市天河区被其生产厂家内蒙古鸿茅国药股份有限公司所在的内蒙古自治区凉城县公安机关千里跨省抓捕的事件[1][2][3]。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E4%B8%89%E9%97%A8%E5%B3%A1%E5%8D%96%E5%AE%98%E6%A1%88">三门峡卖官案</a>
+<ul>
+<li>三门峡卖官案是2009年至2010年中国河南三门峡市的系列反腐案，三门峡原副市长张君贵、原市交通局局长单向东、原市房管局局长黄国华、原卢氏县交通局局长揣予苏、原渑池县委书记仝孟蛟、三门峡市交通局原助理调研员田成亮、三门峡市财政局原局长吕万松相继因受贿卖官被查，调任安阳只工作了9个月的前三门峡市委组织部长李卫民出逃。[1][2]</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%8D%A2%E6%B0%8F%E5%8E%BF%E5%8D%96%E5%AE%98%E6%A1%88">卢氏县卖官案</a>
+<ul>
+<li>卢氏县卖官案[1][2][3]，发生于前卢氏县县委书记杜保乾执政时期的卖官事件，被称为是中华人民共和国成立以来最大规模的卖官事件，为三门峡系列腐败案的一部分。杜保乾于1996年-2001年担任卢氏县县委书记期间，卢氏县的民主政治风气受到严重破坏，卖官事件频出。[4]杜保乾落马下台后，由于中国的政治体制和司法体制，并没有对这件事进行大规模的彻底追责，引起了当地人民群众的不满，也导致了贪官王战方和王振清的上台执政。[來源請求]王振伟担任县委书记后，致力于缓和干群矛盾，使卖官案的消极影响降到最低[5][6]。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%AB%81%E7%BB%99%E5%A4%A7%E5%B1%B1%E7%9A%84%E5%A5%B3%E4%BA%BA">嫁给大山的女人</a>
+<ul>
+<li>嫁给大山的女人是根据河南襄城[1]姑娘郜艳敏的真实事件改编而成。该片讲述18岁的打工女山菊被人贩子拐卖到大山，多次自杀未遂后，被公婆的善良感动，决心以善报善，支撑起这个风雨飘摇的家。后来为了改变山村贫穷的限制，解开大山里人们封闭落后的思想，当上了代课教师的故事。[2]</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E7%8E%8B%E5%B8%85%E5%8F%91%E8%B4%B4%E4%BA%8B%E4%BB%B6">王帅发贴事件</a>
+<ul>
+<li>2009年2月，中華人民共和國河南省灵宝市大王镇南阳村青年王帅在网上发帖，披露当地政府违规征地，20天后，灵宝警方对王帅以“诽谤罪”发起跨省追捕，而后在上海警方协助下，将王帅送进灵宝市看守所关押8天。这一事件被称为王帅发贴事件。事后不久，一位名叫吴保全的39岁内蒙古男子亦因为网上发帖批评政府违法征地，导致被两次“跨省追捕”，最终被判有期徒刑2年。“跨省追捕”一词迅速在网络上传播，指政府部门利用自己手中的职权对身处另一省的利用网络发帖行使法律赋予的权利的公民进行抓捕的行动。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E8%B4%B5%E5%B7%9E%E4%B9%A0%E6%B0%B4%E5%AB%96%E5%AE%BF%E5%B9%BC%E5%A5%B3%E6%A1%88">贵州习水嫖宿幼女案</a>
+<ul>
+<li>贵州习水嫖宿幼女案是指2007至2008年发生在贵州省习水县，由政府官员多次参与、被害人众多的、恶性嫖宿（强奸）幼女案。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E8%B4%B5%E5%B7%9E%E6%AF%95%E8%8A%82%E5%A5%B3%E6%95%99%E5%B8%88%E8%A2%AB%E5%BC%BA%E5%A5%B8%E6%A1%88">贵州毕节女教师被强奸案</a>
+<ul>
+<li>2011年5月17日中午，贵州省毕节市阿市中学26岁初中英语老师周琴（化名）被校长强令陪领导喝酒，酒醉后的她被毕节市阿市乡国土资源管理所所长王忠贵强奸。5月18日，周琴到派出所报案，却被派出所副教导员钟显聪告知，“戴套不算强奸”，问周琴是否愿意私了。后钟显聪因违反五条禁令被撤职[1][2]。周琴将自己的遭遇发到天涯论坛，受到网友关注。7月13日，王忠贵因涉嫌强奸被批准逮捕[3]。7月15日，毕节市公安局政委郭少全在接受采访说公安部的五条禁令是违法的，3天后因发表不当言论被免职[4][5]。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%8A%9A%E9%A1%BA%E5%A4%A9%E4%BB%B7U%E7%9B%98%E4%BA%8B%E4%BB%B6">抚顺天价U盘事件</a>
+<ul>
+<li>抚顺天价U盘事件，是指2010年12月，中国辽宁省抚顺市财政局办公室通过网上采购一批办公用品，其中U盘一项被指定为7台市价约人民幣2300元的苹果iPod touch 4。此项采购项目经网友发帖曝光后，引起网络关注，因为iPod touch 4高昂的价格和其主要功能是娱乐，被网友戏称“天价U盘”[1]。抚顺市政府于12月21日叫停此项采购，7台iPod Touch 4被换成1000元左右的U盘。抚顺财务局否认故意采购，称是采购员业务不精[2]。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%A4%A7%E5%86%B6%E5%B8%82%E2%80%9C8%C2%B76%E2%80%9D%E4%BA%8B%E4%BB%B6">大冶市“8·6”事件</a>
+<ul>
+<li>大冶市“8·6”事件，是2005年8月湖北省黄石市大冶市因撤市设区意见所引发的群众事件。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%B9%96%E5%8C%97%E5%88%A9%E5%B7%9D%E4%BA%8B%E4%BB%B6">湖北利川事件</a>
+<ul>
+<li>湖北利川事件或称冉建新事件，发生在2011年6月9日，湖北利川市数千民众因反贪局长冉建新在双规时突然死亡而围攻市政府大楼。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E8%AF%B4%E5%90%A7%E9%97%A8">说吧门</a>
+<ul>
+<li>说吧门是指2010年12月10日一位网友在湖北省宜昌市政府网站互动平台咨询关于独生子女费的问题，两天后宜昌市计生办仅回复了两个字：“说吧”，这一回复引起来件人的不满，也引来网友的讽刺。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E9%82%93%E7%8E%89%E5%A8%87%E4%BA%8B%E4%BB%B6">邓玉娇事件</a>
+<ul>
+<li>邓玉娇事件，亦称“邓玉娇杀人案”、“邓玉娇刺官案”、“邓玉娇杀淫官案”等，是2009年5月10日晚发生于中國湖北省恩施州巴东县野三关镇的一起宾馆女服务员出于正当防卫目的意外刺死、刺伤镇人民政府人员的刑事案件。此案发生后迅速名震全國，争议甚广，邓玉娇也被许多民众称赞为“当代烈女”。同類案件有清代山東萊州府的陶文鳳案。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%86%AF%E5%BB%BA%E6%A2%85%E5%BC%BA%E5%88%B6%E5%BC%95%E4%BA%A7%E4%BA%8B%E4%BB%B6">冯建梅强制引产事件</a>
+<ul>
+<li>冯建梅强制引产事件，官方称镇坪县妇女冯建梅大月份引产事件[1]，是指2012年6月2日中国陕西省镇坪县怀有第二胎七个月的妇女冯建梅被注射引产针[2]强制引产[3]的事件，地方官员要求冯建梅缴纳违反计划生育一孩政策的4万元罚款[4][5]。两人无力缴纳罚款费用，随后地方官员逮捕冯建梅，迫使她签订引产协议后，把她放倒注射堕胎药[5]。据报事件使冯建梅精神受创，身体状况欠佳。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%8D%8E%E5%8D%97%E8%99%8E%E7%85%A7%E7%89%87%E4%BA%8B%E4%BB%B6">华南虎照片事件</a>
+<ul>
+<li>“华南虎”照片事件是一起中國的修圖造假事件，发生于2007年10月3日，陕西省安康市镇坪县城关镇文采村村民周正龙宣称于神洲湾拍摄到濒危动物野生华南虎的照片。陕西省林业厅于当月10号确认照片所拍确为华南虎，並核發獎勵。但照片公布后，照片和其中老虎的真实性受到了许多质疑。2007年11月，照片中的老虎被發现與一张年画上的老虎极为相似，而因该年画生产于2002年，照片中老虎的真实性受到了更多强烈质疑。但陕西省林业厅相關官員堅持照片老虎為真，引發网民和民众的强烈质疑，并对政府的公信力产生怀疑。2008年6月29日，陕西省人民政府新闻发布会通报查核結果，確認周正龙所拍摄照片中“老虎”实为老虎纸画。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E7%A7%8B%E8%8F%8A%E5%B1%B1%E5%BA%84">秋菊山庄</a>
+<ul>
+<li>秋菊山庄旅游风景区位于陕西省宝鸡市陇县关山乡，因张艺谋电影《秋菊打官司》曾在此地取景而得名。2010年8月7日，一群到深山乡游的年轻人偶然闯入山庄禁区，《瞭望东方周刊》跟进报道，这个地方才被揭露是当地有关部门多年集中关押上访民众的秘密所在地，而当地官方则称山庄是教育民众信访条例的地方。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%9D%A8%E5%B0%8F%E6%B0%91%E6%A1%88">杨小民案</a>
+<ul>
+<li>杨小民案，又称西宁二·二七案，是1979年2月27日，发生于青海西宁的一起故意杀人案，凶手杨小民为时任中国共产党青海省委办公厅副主任杨国英之子。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E9%AD%8F%E6%96%87%E5%8D%8E%E4%BA%8B%E4%BB%B6">魏文华事件</a>
+<ul>
+<li>魏文华事件，又称湖北天门城管杀人案，是2008年发生在湖北省天门市的一件引起广泛关注的城管暴力事件。2008年1月7日下午，湖北省天门市水利建筑公司总经理魏文华与公司党支部书记王述堂驾车经过天门市湾坝村时，因拍摄该市城市管理行政执法局（城管）执法人员粗暴执法过程而被多名城管围殴致死。这一事件引发了中国社会对“取缔城管”的大型讨论。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E9%BB%84%E6%B2%B3%E7%9F%B3%E6%9E%97%E7%99%BE%E5%85%AC%E9%87%8C%E8%B6%8A%E9%87%8E%E8%B5%9B%E4%BA%8B%E6%95%85">黄河石林百公里越野赛事故</a>
+<ul>
+<li>黄河石林百公里越野赛事故，又作白银景泰“5·22”山地越野赛公共安全责任事件[1][2]，是發生於2021年5月22日第四屆「黄河石林百公里越野赛」100公里山地越野跑賽事的死亡事件。由於冷空气在10時30分起经过海拔最高2,230米的赛段，「13时前后，3号打卡点附近气温降至4℃左右，平均风力可达6～7级，最大阵风8～9级，伴有累计降水量3～5毫米，受大风、降水影响，体感温度下降到-5～-3℃，至15时前大部分时段体感温度低于0℃。参赛选手经历了持续最低体感温度时段，加之野外高原环境和衣着单薄多种因素，导致部分参赛选手因急性失温死亡」。[1]172名參賽者出现21死8傷，死亡率12%。此次嚴重戶外運動事故的死亡數超過了1986年造成10人死亡的中美長江漂流事件。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E9%BC%A0%E5%A4%B4%E9%B8%AD%E8%84%96%E4%BA%8B%E4%BB%B6">鼠头鸭脖事件</a>
+<ul>
+<li>江西工業職業技術學院食品安全事件，江西省政府命名为江西工职院“6·1”食品安全事件，俗稱「鼠頭鴨脖」或「指鼠為鴨」，是一起發生在中華人民共和國江西省南昌市的食品安全事件。一名江西工業職業技術學院學生於2023年6月1日在食堂用食時，尋到形似嚙齒類動物頭部的物體，當其拍攝影片公佈于互聯網后，引起輿論爭議。涉事校方初時堅稱此物為鴨脖，食品管理局也佐證校方説法，當事學生也出面“澄清”；輿論則普遍認爲此物明顯為鼠頭，質疑校方與食品管理部門施壓當事學生。江西省政府在社會輿論的壓力下，責成相關部門重啓調查組，并在經過調查後于6月17日正式宣佈此物為老鼠類嚙齒動物頭部，而非鴨脖[1]。</li>
+</ul>
+</li>
+</ul>
+<h2 id="heading-1">分类“中华人民共和国政治丑闻”中的页面</h2>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/2013%E5%B9%B4%E3%80%8A%E5%8D%97%E6%96%B9%E5%91%A8%E6%9C%AB%E3%80%8B%E6%96%B0%E5%B9%B4%E7%89%B9%E5%88%8A%E4%BA%8B%E4%BB%B6">2013年《南方周末》新年特刊事件</a>
+<ul>
+<li>2013年《南方周末》新年特刊事件（也称新年献词事件）是指《南方周末》工作人员称其因迫于中共广东省委宣传部新闻处的压力，未经过该刊正常出版流程[1]，对2013新年特刊中的新年致辞及相关内容进行大幅删改，并产生数个常识性错误[2][3]，引发《南方周末》采编人员抗议的事件。事件引发全球媒体及社交网站如推特、新浪微博用户的广泛关注，主要焦点集中在中华人民共和国内地的审查制度及新闻自由。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E9%83%AD%E7%BE%8E%E7%BE%8E%E7%BA%A2%E5%8D%81%E5%AD%97%E4%BC%9A%E4%BA%8B%E4%BB%B6">郭美美红十字会事件</a>
+<ul>
+<li>郭美美红十字会事件是2011年6月发生的郭美美在其实名认证为“中国红十字会商业总经理”的新浪微博中炫富而引发的社会争议。郭美美“住大别墅，开瑪莎拉蒂”，并牵扯上“中国红十字会”而引起广泛关注及争议[1][2][3]。引发中国公众对中国红十字会所获善款流向的质疑。[4]后经中红博爱资产管理有限公司总经理翁涛与郭美美本人相继证实与承认，郭美美所炫耀的昂贵名车名包等财富，主要来源于中红博爱前董事王军的私人赠与。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E4%BA%8E%E9%91%AB%E6%85%A7">于鑫慧</a>
+<ul>
+<li>于鑫慧（1996年2月27日—），女，江苏如东人，中华人民共和国人物。[1][2]2020年1月，當武漢市爆發COVID-19疫情時以護士身分響應志願服務，嗣後數月因疫情當中擔任義工一事，獲中國各媒體冠以「最美逆行者」、「最美援鄂女護士」及「最美抗疫女護士」等頭銜，同時陸續獲得各種嘉獎，如：「江蘇最美抗疫青年先鋒」[3]及「2020年南通五四青年獎章」，以及火線加入中國共產黨等等。同年10月，遭揭露學歷造假、职业造假，且沒有護士資格證。而且，因为借贷纠纷被起诉，后被列入失信被執行人名單[4]。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%8D%8E%E4%BA%BA%E6%B0%91%E5%85%B1%E5%92%8C%E5%9B%BD%E8%A2%AB%E8%BF%AB%E5%AE%B3%E4%BA%BA%E5%A3%AB%E5%88%97%E8%A1%A8">中华人民共和国被迫害人士列表</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E8%8F%AF%E4%BA%BA%E6%B0%91%E5%85%B1%E5%92%8C%E5%9C%8B%E6%94%BF%E5%BA%9C%E5%B0%8D2019%E5%B9%B4%E5%92%8C2021%E5%B9%B4%E5%8A%A0%E6%8B%BF%E5%A4%A7%E8%81%AF%E9%82%A6%E5%A4%A7%E9%81%B8%E7%9A%84%E5%B9%B2%E6%B6%89">中華人民共和國政府對2019年和2021年加拿大聯邦大選的干涉</a>
+<ul>
+<li>2022年下半年，据全球多家媒體報道中國共產黨與中華人民共和國曾在2019年加拿大聯邦大選中透過其在加拿大的網絡，資助了一批國會候選人以試圖滲透加拿大國會。[1][2][3][4][5]</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%90%B4%E5%A4%A9%E5%96%9C%E6%A1%88">吴天喜案</a>
+<ul>
+<li>吴天喜强奸、组织领导黑社会性质组织案，简称吴天喜案，是2005年至2007年期间发生于中國河南省镇平县的一系列强奸案。第九届全国人大代表、镇平县政协原副主席吴天喜，强奸12岁至16岁的镇平县中学、中专女学生[1][2]22人[3]（另有说法为24人[4]、36人[5]、43人[6]）。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%A5%B3%E5%AD%90%E5%BC%80%E8%BD%A6%E8%BF%9B%E6%95%85%E5%AE%AB%E4%BA%8B%E4%BB%B6">女子开车进故宫事件</a>
+<ul>
+<li>女子开车进故宫事件[1]，是指2020年1月17日微博用户“露小宝LL”发布开越野车进中华人民共和国北京故宫博物院的照片而引发的争议事件，照片中“露小宝LL”和另一名女性同行者倚靠在黑色奔驰越野车前，背景是北京故宫的太和门广场。“露小宝LL”的微博曾认证为“中国国际航空公司乘务员”，照片上的越野车为价格300万元人民币的黑色2019款梅赛德斯-奔驰AMG G63“先型特别版”，由此该事件也被媒体描述为空姐开越野车进故宫[2]、奔驰车开进故宫[3]、女子开奔驰进故宫[4]等。“露小宝LL”原名高露，为已故全国政协副主席何长工的孫媳，其“红三代”的身份在此次事件中也受到关注[5]。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%A8%81%E7%88%BE%E9%81%9C%C2%B7%E6%84%9B%E5%BE%B7%E8%8F%AF%E8%8C%B2%E8%99%9B%E5%81%87%E6%96%B0%E8%81%9E%E4%BA%8B%E4%BB%B6">威爾遜·愛德華茲虛假新聞事件</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%A8%81%E8%A7%86%E8%85%90%E8%B4%A5%E6%A1%88">威视腐败案</a>
+<ul>
+<li>威视腐败案指中国清华同方威视技术股份有限公司涉嫌在纳米比亚行贿的案件。中共中央总书记、国家主席胡锦涛的儿子胡海峰卷入这桩纳米比亚政府采购弊案，威视驻纳米比亚的一名代表以及另外两名当地人因涉及诈欺、贪污和行贿于被纳米比亚当局逮捕。三名嫌疑人分别是纳米比亚一家顾问公司的老板拉迈克和莫科萨瓦，以及威视公司驻纳米比亚的代表杨帆(音译：Yang Fan)。有关三人申请假释的聆讯被延后到2009年7月28日和29日举行。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%BD%AD%E5%B8%A5%E6%8C%87%E6%8E%A7%E5%BC%B5%E9%AB%98%E9%BA%97%E6%80%A7%E9%86%9C%E8%81%9E%E4%BA%8B%E4%BB%B6">彭帥指控張高麗性醜聞事件</a>
+<ul>
+<li>彭帥於2021年11月份指控張高麗性侵的新聞，牽涉中共中央政治局原常委、中國國務院原副總理张高丽與中國网球运动員彭帅，亦是少數牽涉國家級運動員与中国最高級別領導人的性侵指控。事件源自彭帥于微博發文述及張高麗利用權勢發生性關係，並指控張對其始亂終棄。[1]由於兩者分別爲中國體壇及政壇的知名人士，也是首次當事人自我曝光被中國執政高層性侵，[2][3]各国政府和體育界普遍关切事件。国际女子网球协会後取消在中国（包括香港）赛事，中國外交部則批評把體育政治化。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%96%B0%E7%96%86%E5%85%AC%E5%AE%89%E6%96%87%E4%BB%B6">新疆公安文件</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%96%BC%E5%85%B6%E4%B8%80%E4%BA%8B%E4%BB%B6">於其一事件</a>
+<ul>
+<li>於其一事件是指2013年4月9日在中国温州市发生的一起干部在双规期间被故意伤害致死的案件。2013年3月1日晚，时任温州市工业投资集团有限公司党委委员和总工程师的於其一从北京返回温州后在温州永强国际机场被温州市纪委有关人员带走，从此与家人失去联系。[1]4月9日温州市检察院发布消息称，8日晚10时30分许，被市纪委“双规”的於其一，因发生“意外”，经送市中西医结合医院全力抢救无效，于9日凌晨3时15分死亡。[2]后据衢州市公安局侦查，4月8日晚於其一被6名纪委工作人员置于冰水浴桶中反复闷水致死。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%B1%AA%E6%B4%8B%E8%A8%93%E7%A4%BA%E5%8F%B0%E7%81%A3%E5%AA%92%E9%AB%94%E4%BA%BA%E4%BA%8B%E4%BB%B6">汪洋訓示台灣媒體人事件</a>
+<ul>
+<li>汪洋訓示台灣媒體人事件是指主管台灣事務的中共中央政治局常委兼全國政協主席汪洋，在2019年北京第四屆兩岸媒體人峰會的閉門談話場合，提出「一國兩制」，訓示在場台灣媒體人的事件；汪洋閉門談話的錄音檔被外流後，隨即引起了台灣各界的關注。[1][2]</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E7%94%B0%E4%BD%B3%E8%89%AF%E4%BA%8B%E4%BB%B6">田佳良事件</a>
+<ul>
+<li>田佳良事件，又称洁洁良事件，是发生于2018年4月的一宗网络事件。时厦门大学研究生、中共党员田佳良在新浪微博使用「洁洁良」的账号发表一系列批評中国人素質極差，以及極度反感中国及中国共产党的言论。期间使用一系列与支那相关的词汇，以表达她对中国和中国共产党的羞辱[1]，被中国輿論認為是“精日、反华”分子，随后又被揭發有學術不端行為。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E7%AB%8A%E8%81%BD%E5%99%A8%E4%BA%8B%E4%BB%B6_(1961%E5%B9%B4)">竊聽器事件 (1961年)</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E7%B6%AD%E5%90%BE%E7%88%BE%E7%89%B9%E5%88%A5%E6%B3%95%E5%BA%AD">維吾爾特別法庭</a>
+<ul>
+<li>維吾爾特別法庭（Uyghur Tribunal）是一个设在英国倫敦的独立法庭，旨在审查有关中国侵犯维吾尔族人民人权（新疆种族灭绝指控）的证据，并评估这些侵权行为是否构成《防止及惩治灭绝种族罪公约》规定的种族灭绝罪 [1][2][3][4][5]。该法庭於2020年9月成立 [1][2][6]。杰弗里·尼斯擔任首位主席。該法庭于2021年12月9日裁定中華人民共和國政府对维吾尔族犯下了种族灭绝的罪行，包括习近平在内的中国高层领导对针对穆斯林少数民族的行为负有 &ldquo;主要责任&rdquo;。法庭主席杰弗里·尼斯在宣讀判決書時表示：&ldquo;法庭确信，中华人民共和国實施了一项蓄意的、系统的和一致的政策，其目的是通过限制和减少维吾尔族人的出生来实现所谓的&rsquo;优化&rsquo;新疆人口的目標&rdquo;[7][5][8][9]。法庭的最终裁定不会在法律上要求任何政府采取行动，但該法庭的组织者希望法庭的听证会和报告能促使国际採取進一步行动，并帮助追究中国迫害维吾尔人的责任。</li>
+</ul>
+</li>
+</ul>
+<p><strong>中国大陆食品安全事件列表</strong></p>
+<table>
+<thead>
+<tr>
+<th>事件发生或曝光时间</th>
+<th>黑心食品名稱</th>
+<th>簡介</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2003年－2004年</td>
+<td>大頭<a href="https://zh.wikipedia.org/wiki/%E5%A5%B6%E7%B2%89">奶粉</a></td>
+<td>因為食用劣質奶粉導致嬰幼兒致病、致死相關事件<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-1">[1]</a>。生产劣质奶粉的首犯王文官被判处有期徒刑8年。詳見「<a href="https://zh.wikipedia.org/wiki/%E9%98%9C%E9%98%B3%E5%8A%A3%E8%B4%A8%E5%A5%B6%E7%B2%89%E4%BA%8B%E4%BB%B6">阜阳劣质奶粉事件</a>」。</td>
+</tr>
+<tr>
+<td>2004年</td>
+<td><a href="https://zh.wikipedia.org/wiki/%E5%A4%B4%E5%8F%91%E9%85%B1%E6%B2%B9">头发酱油</a></td>
+<td>2004年1月5日，<a href="https://zh.wikipedia.org/wiki/%E6%B9%96%E5%8C%97%E7%9C%81">湖北省</a><a href="https://zh.wikipedia.org/wiki/%E8%8D%86%E5%B7%9E%E5%B8%82">荆州市</a>一家调味品工厂用“<a href="https://zh.wikipedia.org/wiki/%E6%B0%A8%E5%9F%BA%E9%85%B8">氨基酸</a>液”加<a href="https://zh.wikipedia.org/wiki/%E6%B0%A2%E6%B0%A7%E5%8C%96%E9%92%A0">氢氧化钠</a>、<a href="https://zh.wikipedia.org/wiki/%E7%9B%90%E9%85%B8">盐酸</a>、<a href="https://zh.wikipedia.org/wiki/%E7%B4%85%E7%B3%96">红糖</a>、<a href="https://zh.wikipedia.org/wiki/%E8%89%B2%E7%B4%A0">色素</a>等原料勾兑酱油。而湖北省另一家专门生产“氨基酸液”的公司所采用的原料是各种富含<a href="https://zh.wikipedia.org/wiki/%E8%9B%8B%E7%99%BD%E8%B4%A8">蛋白质</a>的废物，主要有人的毛发，医用棉等。原料不经任何处理直接进行酸解，还原成氨基酸<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-2">[2]</a>。而毛发水酱油大肆流行于<a href="https://zh.wikipedia.org/wiki/%E6%B2%B3%E5%8D%97">河南</a>、<a href="https://zh.wikipedia.org/wiki/%E5%AE%89%E5%BE%BD">安徽</a>、<a href="https://zh.wikipedia.org/wiki/%E6%B9%96%E5%8C%97">湖北</a>等地。詳見「<a href="https://zh.wikipedia.org/wiki/%E9%A0%AD%E9%AB%AE%E9%86%AC%E6%B2%B9">頭髮醬油</a>」。</td>
+</tr>
+<tr>
+<td>2005年8月－2006年7月</td>
+<td>「<a href="https://zh.wikipedia.org/wiki/%E5%B7%A5%E4%B8%9A%E7%9B%90">工業鹽</a>」假冒「<a href="https://zh.wikipedia.org/wiki/%E9%A3%9F%E7%94%A8%E7%9B%90">食用鹽</a>」</td>
+<td>2005年8月至2006年7月間，徐建国將780噸工業鹽，重新包裝成假食鹽，以低於食用鹽的市價六成的價格銷售，非法牟取暴利。工業鹽多含<a href="https://zh.wikipedia.org/wiki/%E4%BA%9A%E7%A1%9D%E9%85%B8%E7%9B%90">亞硝酸鹽</a>類，食用後會出現慢性中毒徵狀；如果長期食用，可致人肝中毒以至于发生肝癌导致死亡<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-3">[3]</a>。徐建国被判处有期徒刑7年。</td>
+</tr>
+<tr>
+<td>2006年</td>
+<td>蘇丹紅<a href="https://zh.wikipedia.org/wiki/%E9%B4%A8%E8%9B%8B">鴨蛋</a>或<a href="https://zh.wikipedia.org/wiki/%E9%9B%9E%E8%9B%8B">雞蛋</a></td>
+<td>部份蛋商為了生產高價紅心蛋，違法在雞蛋或鴨蛋中摻入致癌物質<a href="https://zh.wikipedia.org/wiki/%E8%98%87%E4%B8%B9%E7%B4%85">蘇丹紅</a><a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-4">[4]</a>。詳見「<a href="https://zh.wikipedia.org/wiki/%E8%98%87%E4%B8%B9%E7%B4%85%E4%BA%8B%E4%BB%B6">蘇丹紅事件</a>」。</td>
+</tr>
+<tr>
+<td>2006年</td>
+<td>毒比目魚</td>
+<td>上海檢驗發現，俗稱歐洲比目魚其多寶魚的樣本中含有致癌的抗生素硝基呋喃，含量最高達每公斤一毫克（1ppm）。使用硝基呋喃類代謝物、氯黴素、環丙沙星、孔雀石綠、紅黴素和雌激素，以催生魚苗長大。<a href="https://zh.wikipedia.org/wiki/Wikipedia:%E5%88%97%E6%98%8E%E6%9D%A5%E6%BA%90">[來源請求]</a></td>
+</tr>
+<tr>
+<td>2007年</td>
+<td><a href="https://zh.wikipedia.org/wiki/2007%E5%B9%B4%E7%BE%8E%E5%9C%8B%E5%AF%B5%E7%89%A9%E9%A3%9F%E5%93%81%E6%B1%A1%E6%9F%93%E4%BA%8B%E4%BB%B6">有毒寵物食品</a></td>
+<td><a href="https://zh.wikipedia.org/wiki/%E7%BE%8E%E5%9C%8B%E9%A3%9F%E5%93%81%E8%97%A5%E7%89%A9%E7%AE%A1%E7%90%86%E5%B1%80">美國食品藥物管理局</a>檢驗發現，中國所生產的寵物食品主原料小麥筋蛋白裡含有有毒工業化學物質<a href="https://zh.wikipedia.org/wiki/%E4%B8%89%E8%81%9A%E6%B0%B0%E8%83%BA">三聚氰胺</a>及<a href="https://zh.wikipedia.org/wiki/%E4%B8%89%E8%81%9A%E6%B0%B0%E9%85%B8">三聚氰酸</a>，以作為冒牌蛋白質之用，造成<a href="https://zh.wikipedia.org/wiki/%E7%BE%8E%E5%9C%8B">美國</a>、<a href="https://zh.wikipedia.org/wiki/%E5%8A%A0%E6%8B%BF%E5%A4%A7">加拿大</a>數萬隻寵物死亡<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-5">[5]</a><a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-6">[6]</a>。詳見「<a href="https://zh.wikipedia.org/wiki/2007%E5%B9%B4%E7%BE%8E%E5%9C%8B%E5%AF%B5%E7%89%A9%E9%A3%9F%E5%93%81%E6%B1%A1%E6%9F%93%E4%BA%8B%E4%BB%B6">2007年美國寵物食品污染事件</a>」。</td>
+</tr>
+<tr>
+<td>2007年</td>
+<td><a href="https://zh.wikipedia.org/wiki/%E5%A4%A7%E4%BE%BF">大便</a><a href="https://zh.wikipedia.org/wiki/%E8%87%AD%E8%B1%86%E8%85%90">臭豆腐</a></td>
+<td>將豆腐以糞水、<a href="https://zh.wikipedia.org/wiki/%E9%A4%BF%E6%B0%B4">餿水</a>以及有毒化工染料<a href="https://zh.wikipedia.org/wiki/%E7%A1%AB%E9%85%B8%E4%BA%9E%E9%90%B5">硫酸亞鐵</a>泡製，以加速臭豆腐之發酵變臭及上色<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-7">[7]</a>。</td>
+</tr>
+<tr>
+<td>2008年</td>
+<td><a href="https://zh.wikipedia.org/wiki/2008%E5%B9%B4%E4%B8%AD%E5%9B%BD%E5%A5%B6%E5%88%B6%E5%93%81%E6%B1%A1%E6%9F%93%E4%BA%8B%E4%BB%B6">中國奶製品污染事件</a></td>
+<td>河北石家莊<a href="https://zh.wikipedia.org/wiki/%E4%B8%89%E9%B9%BF%E9%9B%86%E5%9B%A2">三鹿集團</a>生產的三鹿牌嬰幼兒配方奶粉，被驗出含有<a href="https://zh.wikipedia.org/wiki/%E4%B8%89%E8%81%9A%E6%B0%B0%E8%83%BA">三聚氰胺</a>，導致在<a href="https://zh.wikipedia.org/wiki/%E7%94%98%E8%82%85">甘肅</a>、<a href="https://zh.wikipedia.org/wiki/%E6%B1%9F%E8%98%87">江蘇</a>等多個省市出現多名嬰兒得<a href="https://zh.wikipedia.org/wiki/%E8%85%8E%E7%B5%90%E7%9F%B3">腎結石</a>的事件。稍後，包括<a href="https://zh.wikipedia.org/wiki/%E4%BC%8A%E5%88%A9">伊利</a>、<a href="https://zh.wikipedia.org/wiki/%E8%92%99%E7%89%9B">蒙牛</a>、<a href="https://zh.wikipedia.org/wiki/%E5%85%89%E6%98%8E">光明</a>、<a href="https://zh.wikipedia.org/wiki/%E8%81%96%E5%85%83">聖元</a>及<a href="https://zh.wikipedia.org/wiki/%E9%9B%85%E5%A3%AB%E5%88%A9">雅士利</a>在內的22個廠家69批次產品中都檢出三聚氰胺，最後事件擴散開來，不止是奶粉，中國所有奶製品和面粉制品普遍也受到<a href="https://zh.wikipedia.org/wiki/%E4%B8%89%E8%81%9A%E6%B0%B0%E8%83%BA">三聚氰胺</a>污染，其严重程度超过了2007年的出口美国的宠物食品<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-8">[8]</a>。三鹿集团董事长获判无期徒刑，直接生产毒牛奶的两名主犯被判处死刑并执行。詳見「<a href="https://zh.wikipedia.org/wiki/2008%E5%B9%B4%E4%B8%AD%E5%9B%BD%E5%A5%B6%E5%88%B6%E5%93%81%E6%B1%A1%E6%9F%93%E4%BA%8B%E4%BB%B6">2008年中國奶製品污染事件</a>」。</td>
+</tr>
+<tr>
+<td>2008年</td>
+<td>黑心<a href="https://zh.wikipedia.org/wiki/%E7%A2%B3%E9%85%B8%E6%B0%AB%E9%8A%A8">碳酸氫銨</a>膨化劑</td>
+<td>中國製造碳酸氫銨膨化劑（俗稱<a href="https://zh.wikipedia.org/wiki/%E9%8A%A8%E7%B2%89">銨粉</a>）被檢出含有超量300ppm的<a href="https://zh.wikipedia.org/wiki/%E4%B8%89%E8%81%9A%E6%B0%B0%E8%83%BA">三聚氰胺</a>，<a href="https://zh.wikipedia.org/wiki/%E5%8F%B0%E7%81%A3">台灣</a>及<a href="https://zh.wikipedia.org/wiki/%E9%A6%AC%E4%BE%86%E8%A5%BF%E4%BA%9E">馬來西亞</a>宣布，即日起全面禁止進口中國製碳酸氫銨，后检查出中国产小苏打、发泡剂、柠檬酸钠、靛蓝中均有三聚氰胺<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-9">[9]</a>。</td>
+</tr>
+<tr>
+<td>2008年</td>
+<td>黑心<a href="https://zh.wikipedia.org/wiki/%E9%BA%B5%E7%B2%89">麵粉</a></td>
+<td>部份製造麵粉被查出違法添加大量<a href="https://zh.wikipedia.org/wiki/%E6%BB%91%E7%9F%B3%E7%B2%89">滑石粉</a>，長期食用將產生<a href="https://zh.wikipedia.org/w/index.php?title=%E9%AB%98%E8%A1%80%E9%8E%82%E7%97%87&amp;action=edit&amp;redlink=1">高血鎂症</a>，造成肝、腎及神經方面傷害、口腔潰瘍和牙齦出血，后又查出山东面粉不但含滑石粉，还含有<a href="https://zh.wikipedia.org/wiki/%E6%B4%97%E8%A1%A3%E7%B2%89">洗衣粉</a>、<a href="https://zh.wikipedia.org/wiki/%E6%B0%A2%E6%B0%A7%E5%8C%96%E9%92%A0">氢氧化钠</a>等化学原料用来漂白<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-10">[10]</a>。</td>
+</tr>
+<tr>
+<td>2008年</td>
+<td>毒<a href="https://zh.wikipedia.org/wiki/%E6%B0%B4%E9%A4%83">水餃</a></td>
+<td>由<a href="https://zh.wikipedia.org/wiki/%E6%B2%B3%E5%8C%97%E7%9C%81">河北省</a><a href="https://zh.wikipedia.org/wiki/%E7%9F%B3%E5%AE%B6%E8%8E%8A%E5%B8%82">石家莊市</a>天洋食品廠出口到日本的水餃被檢驗出含有農藥<a href="https://zh.wikipedia.org/wiki/%E7%94%B2%E8%83%BA%E7%A3%B7">甲胺磷</a>及<a href="https://zh.wikipedia.org/wiki/DDT">DDT</a>成份，造成二百多人中毒，中國政府原先堅稱該批水餃是在日本被下毒，但河北省公安於2010年3月27日逮捕下毒工人呂月庭，證實毒藥來源的確源自於中國<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-11">[11]</a><a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-12">[12]</a>。投毒犯吕月庭被判处无期徒刑。詳見：「<a href="https://zh.wikipedia.org/wiki/2008%E5%B9%B4%E4%B8%AD%E5%9C%8B%E8%A3%BD%E5%86%B7%E5%87%8D%E9%A4%83%E5%AD%90%E4%B8%AD%E6%AF%92%E4%BA%8B%E4%BB%B6">2008年中國製冷凍餃子中毒事件</a>」。</td>
+</tr>
+<tr>
+<td>2008年</td>
+<td><a href="https://zh.wikipedia.org/wiki/%E5%81%87%E9%85%92">假酒</a></td>
+<td>以工業用<a href="https://zh.wikipedia.org/wiki/%E7%94%B2%E9%86%87">甲醇</a>製造，可引致失明、肝病、甚至死亡。詳見<a href="https://zh.wikipedia.org/w/index.php?title=%E5%BB%A3%E5%B7%9E%E5%81%87%E9%85%92%E4%B8%AD%E6%AF%92%E4%BA%8B%E4%BB%B6&amp;action=edit&amp;redlink=1">廣州假酒中毒事件</a>。首犯程才明一、二审皆被判处死刑。而实际上中国大陆假酒已经泛滥到政府都无从下手查处的地步，如贵州<a href="https://zh.wikipedia.org/wiki/%E8%8C%85%E5%8F%B0%E9%85%92">茅台酒</a>，全国有一年产量仅60吨，然而一年交易量超过12000吨，也就是说95%以上都是假酒<a href="https://zh.wikipedia.org/wiki/Wikipedia:%E5%88%97%E6%98%8E%E6%9D%A5%E6%BA%90">[來源請求]</a>。</td>
+</tr>
+<tr>
+<td>2009年</td>
+<td><a href="https://zh.wikipedia.org/wiki/%E6%B3%A8%E6%B0%B4%E8%82%89">注水肉</a></td>
+<td>部份肉販為增加<a href="https://zh.wikipedia.org/wiki/%E8%82%89%E9%A1%9E">肉品</a>（主要為<a href="https://zh.wikipedia.org/wiki/%E8%B1%AC%E8%82%89">豬肉</a>和<a href="https://zh.wikipedia.org/wiki/%E7%89%9B%E8%82%89">牛肉</a>）重量以牟利，於屠宰前給動物強行灌水，或者屠宰後向肉內注水製成，注水可達淨重量的15-20%&lt;，和其他的事件不同，注水肉已经成为一个全国性的，几乎无法查处和整治的难题<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-13">[13]</a>。詳見「<a href="https://zh.wikipedia.org/wiki/%E6%B3%A8%E6%B0%B4%E8%82%89">注水肉</a>」。</td>
+</tr>
+<tr>
+<td>2009年</td>
+<td><a href="https://zh.wikipedia.org/wiki/%E8%BE%B2%E8%97%A5">農藥</a><a href="https://zh.wikipedia.org/wiki/%E9%A5%85%E9%A0%AD">饅頭</a></td>
+<td>部份饅頭業者為提高饅頭的筋度及口感，將農藥<a href="https://zh.wikipedia.org/wiki/%E4%BA%8C%E6%B0%AF%E6%9D%BE">二氯松</a>（俗稱<a href="https://zh.wikipedia.org/wiki/%E6%95%8C%E6%95%8C%E7%95%8F">敵敵畏</a>）等有毒物質加入其中，並使用<a href="https://zh.wikipedia.org/wiki/%E7%A1%AB%E7%A3%BA">硫磺</a>熏蒸漂白以增加賣相，网上曝光后，亦有从业者称上述方法已被淘汰，现在亦有用洗衣粉和漂白粉提色，用碳酸氢钠和氨水增加口感的工艺取代之<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-14">[14]</a>。</td>
+</tr>
+<tr>
+<td>2009年－2010年</td>
+<td>羊尿<a href="https://zh.wikipedia.org/wiki/%E9%B4%A8">鴨肉</a></td>
+<td><a href="https://zh.wikipedia.org/wiki/%E9%9D%92%E5%B3%B6">青島</a>四方工商分局查獲<a href="https://zh.wikipedia.org/wiki/%E7%BE%8A%E8%82%89">羊肉</a>商販以羊尿浸泡鴨肉，使鴨肉帶有羊膻味，冒充羊肉販賣，同时显露出大陆<a href="https://zh.wikipedia.org/wiki/%E5%9F%8E%E7%AE%A1">城管</a>大肆非法捕杀城市中的流浪猫、狗等宠物，然后转卖至商贩用于制作这些肉串<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-15">[15]</a>。另於2010年還爆發了羊尿貓肉事件<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-16">[16]</a><a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-17">[17]</a>。</td>
+</tr>
+<tr>
+<td>2009年</td>
+<td>人造<a href="https://zh.wikipedia.org/wiki/%E7%8C%AA%E8%A1%80">豬血</a></td>
+<td><a href="https://zh.wikipedia.org/wiki/%E6%B9%96%E5%8C%97%E7%9C%81">湖北省</a><a href="https://zh.wikipedia.org/wiki/%E6%AD%A6%E6%BC%A2%E5%B8%82">武漢市</a>工商局查獲，市面上生產的豬血大都是僅以少量豬血，混合<a href="https://zh.wikipedia.org/wiki/%E7%94%B2%E9%86%9B">甲醛</a>、工業用鹽、玉米粉、染色劑凝固而成的人造豬血，其中甲醛為高毒性物質，食用後，會致癌和畸型。而工業用鹽中的<a href="https://zh.wikipedia.org/wiki/%E4%BA%9A%E7%A1%9D%E9%85%B8%E7%9B%90">亞硝酸鹽</a>，大量攝取會導致體內缺氧，轉變為強烈致癌物質<a href="https://zh.wikipedia.org/wiki/%E4%BA%9A%E7%A1%9D%E8%83%BA">亞硝胺</a><a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-18">[18]</a>。</td>
+</tr>
+<tr>
+<td>2009年</td>
+<td>药水豆芽</td>
+<td>使用<a href="https://zh.wikipedia.org/wiki/%E6%B6%88%E7%82%8E%E8%8D%AF">消炎藥</a>、<a href="https://zh.wikipedia.org/wiki/%E6%8A%97%E7%94%9F%E7%B4%A0">抗生素</a>、<a href="https://zh.wikipedia.org/wiki/%E7%94%9F%E9%95%BF%E6%BF%80%E7%B4%A0">生長激素</a>將原本10天生長期的<a href="https://zh.wikipedia.org/wiki/%E8%B1%86%E8%8A%BD">豆芽</a>，加速到只要3天即可出貨。使用<a href="https://zh.wikipedia.org/w/index.php?title=%E7%84%A1%E6%A0%B9%E5%8A%91&amp;action=edit&amp;redlink=1">無根劑</a>抑制根部生長，提高豆芽的莖部生長，提高產量30%以上，使1斤的黃豆或綠豆發出近20斤的豆芽。使用<a href="https://zh.wikipedia.org/w/index.php?title=%E6%B6%88%E6%AF%92%E6%B0%B4&amp;action=edit&amp;redlink=1">消毒水</a>防腐，以延長豆芽可販賣的天數。使用<a href="https://zh.wikipedia.org/wiki/%E6%BC%82%E7%99%BD%E6%B0%B4">漂白水</a>美白，增加豆芽的賣相<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-19">[19]</a>。</td>
+</tr>
+<tr>
+<td>2010年</td>
+<td>膨風水果</td>
+<td>部份農民為使水果生長週期縮短、增大果實體積而噴灑遭禁止使用的<a href="https://zh.wikipedia.org/w/index.php?title=%E8%86%A8%E5%A4%A7%E5%8A%91&amp;action=edit&amp;redlink=1">膨大劑</a>，用膨大劑栽培而成的水果雖然體積特別大，但裡面卻是空心的，且嚐起來淡而無味，長期食用將對腎臟造成危害<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-20">[20]</a><a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-21">[21]</a>。</td>
+</tr>
+<tr>
+<td>2010年</td>
+<td><a href="https://zh.wikipedia.org/wiki/%E5%9C%B0%E6%BA%9D%E6%B2%B9">地溝油</a></td>
+<td>不法商人將餐廳排放至水溝中的膏狀廢油撈取後，經過濾、加熱、沉澱、分離等程序，提煉成為「食用油」，再以低價轉賣給餐館。地溝油內含致癌物質、細菌、病毒、重金屬，毒性是砒霜的100倍，甚至在重庆市区，地沟油已经成了公开的秘密，市民甚至可以和餐馆老板交谈这些事情毫不避讳<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-22">[22]</a><a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-23">[23]</a><a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-24">[24]</a><a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-25">[25]</a><a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-26">[26]</a>。目前已审判的生产地沟油的不法企业主有一人获死缓，三人获无期徒刑。詳見：「<a href="https://zh.wikipedia.org/wiki/%E5%9C%B0%E6%BA%9D%E6%B2%B9">地溝油</a>」。</td>
+</tr>
+<tr>
+<td>2010年</td>
+<td>染色<a href="https://zh.wikipedia.org/wiki/%E9%9D%92%E8%B1%86">青豆</a></td>
+<td>中國<a href="https://zh.wikipedia.org/wiki/%E6%B9%96%E5%8D%97">湖南</a>公安查獲不肖商人，將<a href="https://zh.wikipedia.org/wiki/%E9%BB%83%E8%B1%86">黃豆</a>浸泡在有毒化學液體、色素和防腐劑中，加以增重並染色偽裝成高價的青豆販賣<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-27">[27]</a><a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-28">[28]</a>。</td>
+</tr>
+<tr>
+<td>2010年</td>
+<td>假<a href="https://zh.wikipedia.org/wiki/%E7%89%9B%E6%B2%B9">牛油</a></td>
+<td>在中国大陸到處買得到的四川麻辣火鍋鍋底包裝，理應加牛油的鍋底食材，經大陸媒體批露卻是加了包裝材料用的石蠟。</td>
+</tr>
+<tr>
+<td>2010年</td>
+<td>泥巴<a href="https://zh.wikipedia.org/wiki/%E6%B5%B7%E9%A6%AC">海馬</a></td>
+<td>廣州部份乾貨商所販賣的乾海馬肚中被填充大量泥巴及澱粉藉以增加重量<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-29">[29]</a><a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-30">[30]</a>。</td>
+</tr>
+<tr>
+<td><a href="https://zh.wikipedia.org/wiki/2010%E5%B9%B411%E6%9C%88">2010年11月</a></td>
+<td>有毒白桃水果罐頭</td>
+<td><a href="https://zh.wikipedia.org/wiki/%E5%B1%B1%E6%9D%B1">山東</a>白桃去皮，為了節省時間，竟然加入了俗稱火鹼，也就是工業用化學原料氫氧化鈉,最後工人徒手將冒牌的黃桃，直接裝入未經消毒的玻璃罐，準備裝箱運往各地販售。</td>
+</tr>
+<tr>
+<td>2011年4月</td>
+<td>黑心染色饅頭</td>
+<td>上海盛祿食品的「染色饅頭」事件，超過保存期限的饅頭，回收絞碎後再當成原料進行製造。並且使用大量的食品添加劑（<a href="https://zh.wikipedia.org/wiki/%E9%A3%9F%E7%94%A8%E8%89%B2%E7%B4%A0">食用色素</a>、蜜糖精、防腐劑），偽裝成玉米饅頭、雜糧饅頭。事件曝光後，上海市质量技监局已经吊销上海盛禄食品有限公司分公司的食品生产许可证。<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-31">[31]</a></td>
+</tr>
+<tr>
+<td>2011年4月</td>
+<td>毒生姜</td>
+<td><a href="https://zh.wikipedia.org/wiki/%E6%B9%96%E5%8C%97%E7%9C%81">湖北省</a><a href="https://zh.wikipedia.org/wiki/%E5%AE%9C%E6%98%8C%E5%B8%82">宜昌市</a>工商所执法人员在一座大型蔬菜批发市场内查获近1吨“毒生姜”,专家称等于在食用慢性毒药。<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-32">[32]</a></td>
+</tr>
+<tr>
+<td>2011年5月</td>
+<td>污水饅頭</td>
+<td><a href="https://zh.wikipedia.org/wiki/%E5%BB%A3%E6%9D%B1%E7%9C%81">廣東省</a><a href="https://zh.wikipedia.org/wiki/%E6%B7%B1%E5%9C%B3%E5%B8%82">深圳市</a>發現了一些污水饅頭，使用過期變質的麵粉、膨鬆劑、乳化劑、氧化劑、增白劑等有毒用料制作「又白又大」的饅頭。<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-33">[33]</a></td>
+</tr>
+<tr>
+<td>2011年5月</td>
+<td>毒海參</td>
+<td>上海、沈陽拘捕兩人，以利用<a href="https://zh.wikipedia.org/wiki/%E7%94%B2%E9%86%9B">甲醛</a>、<a href="https://zh.wikipedia.org/wiki/%E7%81%AB%E9%B9%BC">火碱</a>、<a href="https://zh.wikipedia.org/wiki/%E9%9B%99%E6%B0%A7%E6%B0%B4">雙氧水</a>、<a href="https://zh.wikipedia.org/wiki/%E7%A1%BC%E7%A0%82">硼砂</a>等化學原料浸泡海參，改變劣質海參色澤及體積，變上等貨牟取暴利。食用有毒海參會令中樞神經受損。</td>
+</tr>
+<tr>
+<td>2011年12月</td>
+<td>霉變食品</td>
+<td>中國大陸國家質檢總局抽查發現<a href="https://zh.wikipedia.org/wiki/%E8%92%99%E7%89%9B%E9%9B%86%E5%9B%A2">蒙牛集团</a>、長富純2種產品<a href="https://zh.wikipedia.org/wiki/%E9%BB%84%E6%9B%B2%E9%9C%89%E6%AF%92%E7%B4%A0">黄曲霉毒素</a>M1項目不符合標準的規定。其中蒙牛乳業（眉山）有限公司的一批次產品被檢出黃曲黴素M1含量超標140%。<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-34">[34]</a>詳見「<a href="https://zh.wikipedia.org/wiki/2011%E5%B9%B4%E4%B8%AD%E5%9B%BD%E5%A5%B6%E5%88%B6%E5%93%81%E8%87%B4%E7%99%8C%E7%89%A9%E8%B6%85%E6%A0%87%E4%BA%8B%E4%BB%B6">2011年中国奶制品致癌物超标事件</a>」。</td>
+</tr>
+<tr>
+<td>2013年5月</td>
+<td>毒生<a href="https://zh.wikipedia.org/wiki/%E8%96%91">薑</a></td>
+<td>在生薑的種植使用不得用於生薑的劇毒農藥「神農丹」。<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-35">[35]</a></td>
+</tr>
+<tr>
+<td>2014年7月</td>
+<td>过期<a href="https://zh.wikipedia.org/wiki/%E8%82%89%E7%B1%BB">肉类</a></td>
+<td><a href="https://zh.wikipedia.org/wiki/%E4%B8%8A%E6%B5%B7%E7%A6%8F%E5%96%9C%E9%A3%9F%E5%93%81%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8">上海福喜食品有限公司</a>向<a href="https://zh.wikipedia.org/wiki/%E9%BA%A6%E5%BD%93%E5%8A%B3">麦当劳</a>和<a href="https://zh.wikipedia.org/wiki/%E8%82%AF%E5%BE%B7%E5%9F%BA">肯德基</a>提供过期原料。<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-36">[36]</a></td>
+</tr>
+<tr>
+<td>2016年9月</td>
+<td><a href="https://zh.wikipedia.org/wiki/%E7%BD%82%E7%B2%9F">罂粟</a>调料</td>
+<td>发生于<a href="https://zh.wikipedia.org/wiki/%E4%B8%8A%E6%B5%B7%E5%B8%82">上海市</a>的<a href="https://zh.wikipedia.org/wiki/%E6%9B%B9%E7%90%B3%E7%B1%B3%E7%B7%9A%E9%A3%9F%E7%89%A9%E6%B7%BB%E5%8A%A0%E6%AF%92%E5%93%81%E6%A1%88">曹琳米線食物添加毒品案</a>。在调料中添加罂粟，是食品业界吸引顾客、提高销售的<a href="https://zh.wikipedia.org/wiki/%E6%BD%9C%E8%A7%84%E5%88%99">潜规则</a>。</td>
+</tr>
+<tr>
+<td>2018年10月</td>
+<td><a href="https://zh.wikipedia.org/wiki/%E9%9C%89%E5%8F%98">霉变</a>食品</td>
+<td><a href="https://zh.wikipedia.org/wiki/2018%E5%B9%B4%E4%B8%8A%E6%B5%B7%E4%B8%AD%E8%8A%AF%E5%AD%A6%E6%A0%A1%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6">上海中芯学校</a> ，给学校的<a href="https://zh.wikipedia.org/wiki/%E4%BE%9B%E9%A4%90">供餐</a>食材被发现问题。<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-37">[37]</a></td>
+</tr>
+<tr>
+<td>2019年3月</td>
+<td><a href="https://zh.wikipedia.org/wiki/%E9%9C%89%E5%8F%98">霉变</a>食品</td>
+<td><a href="https://zh.wikipedia.org/wiki/2019%E5%B9%B4%E6%88%90%E9%83%BD%E6%A0%A1%E5%9B%AD%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6">成都校园食品安全事件</a>，给学校的<a href="https://zh.wikipedia.org/wiki/%E4%BE%9B%E9%A4%90">供餐</a>食材被发现问题。</td>
+</tr>
+<tr>
+<td>2019年11月</td>
+<td>病死猪肉</td>
+<td><a href="https://zh.wikipedia.org/wiki/%E5%B9%BF%E4%B8%9C">广东</a><a href="https://zh.wikipedia.org/wiki/%E4%BD%9B%E5%B1%B1%E5%B8%82">佛山</a>一家正规肉联厂将病死猪屠宰后，盖上检疫合格章，流入广州、佛山等地的市场，每天流入的病死达数千斤。<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-38">[38]</a></td>
+</tr>
+<tr>
+<td>2020年9月</td>
+<td>硫磺熏八角</td>
+<td>在全国八角主产区<a href="https://zh.wikipedia.org/wiki/%E5%B9%BF%E8%A5%BF">广西</a><a href="https://zh.wikipedia.org/wiki/%E5%8D%97%E5%AE%81">南宁</a>，用硫磺熏八角保鲜是“公开的秘密”。经检测，市面上的八角二氧化硫残留量超原国标16倍。<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-39">[39]</a></td>
+</tr>
+<tr>
+<td>2022年3月</td>
+<td>假牛肉</td>
+<td><a href="https://zh.wikipedia.org/wiki/%E6%B1%9F%E8%8B%8F%E7%9C%81">江苏省</a><a href="https://zh.wikipedia.org/wiki/%E6%B7%AE%E5%AE%89%E5%B8%82">淮安市</a>一对夫妇以猪肉为原料，通过亚硝酸钠浸泡，胭脂红上色加工卤肉半成品，并以牛肉的名义销售，获利80余万。其销售的猪肉中亚硝酸盐含量超国家标准7倍。<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-40">[40]</a></td>
+</tr>
+<tr>
+<td>2022年3月</td>
+<td>黑心<a href="https://zh.wikipedia.org/wiki/%E9%85%B8%E8%8F%9C">酸菜</a></td>
+<td><a href="https://zh.wikipedia.org/w/index.php?title=2022%E5%B9%B4315%E6%99%9A%E4%BC%9A&amp;action=edit&amp;redlink=1">2022年315晚会</a>曝光<a href="https://zh.wikipedia.org/w/index.php?title=%E6%B9%96%E5%8D%97%E6%8F%92%E6%97%97%E8%8F%9C%E4%B8%9A&amp;action=edit&amp;redlink=1">湖南插旗菜业</a>将黑心土坑酸菜提供给<a href="https://zh.wikipedia.org/wiki/%E5%BA%B7%E5%B8%88%E5%82%85">康师傅</a>生产<a href="https://zh.wikipedia.org/wiki/%E8%80%81%E5%9D%9B%E9%85%B8%E8%8F%9C%E7%89%9B%E8%82%89%E9%9D%A2">老坛酸菜牛肉面</a>，其生产土坑酸菜菌落数超标，工人赤脚踩在菜上，还混有烟头等杂质。事后康师傅主动下架涉事方便面。</td>
+</tr>
+<tr>
+<td>2023年6月1日</td>
+<td><a href="https://zh.wikipedia.org/wiki/%E9%BC%A0%E5%A4%B4%E9%B8%AD%E8%84%96">鼠头鸭脖</a></td>
+<td><a href="https://zh.wikipedia.org/wiki/%E6%B1%9F%E8%A5%BF%E5%B7%A5%E4%B8%9A%E8%81%8C%E4%B8%9A%E6%8A%80%E6%9C%AF%E5%AD%A6%E9%99%A2">江西工业职业技术学院</a>一名学生在该校由<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%BF%AB%E9%A4%90%E9%A5%AE">中快餐饮</a>的子公司经营的食堂用餐时吃到老鼠头，事后学校发布情况通报称确认“异物”为鸭脖，为正常食物，当事学生对此做出书面澄清<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-:0-41">[41]</a>。当地市场监督管理局亦判定涉事之异物为鸭脖<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-:0-41">[41]</a>。舆情发酵后，<a href="https://zh.wikipedia.org/wiki/%E6%B1%9F%E8%A5%BF%E7%9C%81%E6%95%99%E8%82%B2%E5%8E%85">江西省教育厅</a>、<a href="https://zh.wikipedia.org/wiki/%E6%B1%9F%E8%A5%BF%E7%9C%81%E5%85%AC%E5%AE%89%E5%8E%85">公安厅</a>、<a href="https://zh.wikipedia.org/wiki/%E6%B1%9F%E8%A5%BF%E7%9C%81%E4%BA%BA%E6%B0%91%E6%94%BF%E5%BA%9C%E5%9B%BD%E6%9C%89%E8%B5%84%E4%BA%A7%E7%9B%91%E7%9D%A3%E7%AE%A1%E7%90%86%E5%A7%94%E5%91%98%E4%BC%9A">国资委</a>、<a href="https://zh.wikipedia.org/w/index.php?title=%E6%B1%9F%E8%A5%BF%E7%9C%81%E5%B8%82%E5%9C%BA%E7%9B%91%E7%9D%A3%E7%AE%A1%E7%90%86%E5%B1%80&amp;action=edit&amp;redlink=1">市场监督管理局</a>等部门组成联合调查组，经调查认定异物确系鼠头<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-42">[42]</a>。</td>
+</tr>
+<tr>
+<td>2023年6月27日</td>
+<td><a href="https://zh.wikipedia.org/wiki/%E9%BC%A0">老鼠</a>頭</td>
+<td>一名網友於該日上傳一段影片指出，他在<a href="https://zh.wikipedia.org/wiki/%E9%87%8D%E6%85%B6%E5%B8%82">重慶市</a><a href="https://zh.wikipedia.org/wiki/%E7%A7%80%E5%B1%B1%E5%9C%9F%E5%AE%B6%E6%97%8F%E8%8B%97%E6%97%8F%E8%87%AA%E6%B2%BB%E7%B8%A3">秀山縣</a>中醫院餐廳販售的“魔芋燒鴨”便當中，疑似發現老鼠頭，上面還有<a href="https://zh.wikipedia.org/wiki/%E5%9B%93%E9%BD%92%E7%9B%AE">囓齒</a>動物的鬍鬚。影片在網路上瘋傳後，該縣市場監管局於當天介入調查，隨後發聲明證實便當中的異物為老鼠頭，而鼠頭為何會進入便當中的詳細情況，則在進一步調查中。該間中醫院強調餐廳並非該醫院經營，而是由第三方承包。事件發生後，餐廳已對外關閉<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-43">[43]</a>。當天，“重慶一醫院食堂盒飯中疑吃出老鼠頭”衝上<a href="https://zh.wikipedia.org/wiki/%E7%99%BE%E5%BA%A6">百度</a>熱搜榜<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8#cite_note-44">[44]</a>。</td>
+</tr>
+<tr>
+<td>2024年5月</td>
+<td>煤制油罐車裝入食用油</td>
+<td>詳見「<a href="https://zh.wikipedia.org/wiki/2024%E5%B9%B4%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E9%A3%9F%E7%94%A8%E6%B2%B9%E7%BD%90%E8%BD%A6%E6%B7%B7%E8%BF%90%E4%BA%8B%E4%BB%B6">2024年中國大陸食用油罐車混運事件</a>」。</td>
+</tr>
+</tbody>
+</table>
+<p><a href="https://zh.wikipedia.org/wiki/Category:%E4%B8%AD%E5%9B%BD%E9%A3%9F%E5%93%81%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6">Category:中国食品安全事件 - 维基百科，自由的百科全书 (wikipedia.org)</a></p>
+
+            </div>
+
+</article>
+
+
+
+
+
+
+<div class="mod-post__poster">
+</div>
+
+</div>
+
+
+
+
+
+
+<!-- Reading Progress Component -->
+<div class="reading-progress-container">
+  <span class="reading-label">阅读进度</span>
+  <span class="reading-value">0%</span>
+  <svg class="progress-ring" viewBox="0 0 24 24">
+    <!-- Background Circle -->
+    <circle class="progress-ring__circle-bg" stroke-width="3" fill="transparent" r="10" cx="12" cy="12" />
+    <!-- Progress Circle -->
+    <circle class="progress-ring__circle" stroke-width="3" fill="transparent" r="10" cx="12" cy="12" />
+  </svg>
+</div>
+<footer id="footer" class="footer">
+    <nav>
+        
+        
+        <a class="menu-item" href="/">首页</a>
+        
+         · 
+        <a class="menu-item" href="/post">博客</a>
+        
+         · 
+        <a class="menu-item" href="/memos">闪念</a>
+        
+         · 
+        <a class="menu-item" href="/archives">归档</a>
+        
+         · 
+        <a class="menu-item" href="/tags">标签</a>
+        
+         · 
+        <a class="menu-item" href="/links">友链</a>
+        
+         · 
+        <a class="menu-item" href="https://rudolphquan.github.io/post/guan-yu-wo">关于</a>
+        
+    </nav>
+
+    <div class="Copyright">Copyright &copy; <span class="current-year"></span> <a href="https://rudolphquan.github.io">Rudolph Quan&#39;s blog</a></div>
+    <script>document.querySelector('.current-year').textContent = new Date().getFullYear();</script>
+
+    <div class="index_footer">
+         ·
+        <a class="rss" href="/feed.xml" target="_blank" rel="noopener noreferrer">
+            <i class="ri-rss-line"></i>RSS
+        </a>
+    </div>
+</footer>
+
+
+
+
+    
+
+    
+<script>console.log("\n%c ✦ Gridea Pro v1.1.1 %c · Theme: amore-jinja2 v1.1.0 · https://gridea.pro %c\n","color:#fadfa3;background:#111111;padding:9px 14px;border-radius:4px 0 0 4px;font-weight:500;font-size:12px","color:#e05c00;background:#fff3ec;padding:9px 14px;border-radius:0 4px 4px 0;font-size:11px","")</script>
+</body>
+
+</html>
